@@ -153,14 +153,20 @@
   max-width: 34ch;
 }
 
+/*
+ * The word that carries the whole selection. It was 0.6rem — 9.6px — for the
+ * one decision this page exists to collect, which is smaller than the legal
+ * fine print two sections down. Still a word and still not a badge, but now
+ * large enough to be read as the affordance it is.
+ */
 .state {
   font-family: var(--f-ui);
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 400;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   text-indent: 0.28em;
-  color: var(--ink-3);
+  color: var(--ink-2);
   margin-top: 0.85rem;
   transition: color var(--t);
 }
@@ -196,11 +202,23 @@
      * hairline, so no vertical rule is needed and none is drawn.
      */
     column-gap: 4rem;
-    align-items: start;
+    /*
+     * Stretch, so both tiers are the row's height. The Commission carries an
+     * extra constraint line, so with `start` the two columns ended 87px apart
+     * and the two words a buyer is choosing between sat on different lines.
+     */
+    align-items: stretch;
   }
 
   .tier {
     padding-block: 1.6rem 2rem;
+  }
+
+  /* Pushed to the foot of whichever tier is shorter, so the two words the
+     comparison turns on share a baseline and can be read as a pair. */
+  .state {
+    margin-top: auto;
+    padding-top: 1.25rem;
   }
 
   .name {

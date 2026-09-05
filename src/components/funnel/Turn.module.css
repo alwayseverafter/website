@@ -14,6 +14,26 @@
   padding-block: 3rem 3.5rem;
 }
 
+/*
+ * One column on a phone, which is the 90% case and the only case below 48rem.
+ * Off the phone the section becomes the editorial pairing it always wanted to
+ * be: the line that names the sample couple, and the line that hands it over,
+ * set beside each other on a shared baseline instead of stacked in the left
+ * third of the screen with the right two thirds empty.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "rule"
+    "made"
+    "yours";
+}
+
+.rule { grid-area: rule; }
+.made { grid-area: made; }
+.yours { grid-area: yours; }
+
 .rule {
   /* The global `.hair` carries the weight; this only tightens the rhythm so the
      cut sits close to the film above it. */
@@ -38,6 +58,22 @@
     padding-block: 4rem 5rem;
   }
 
+  /*
+   * The heading takes the wide column: it is the section's whole argument and
+   * a 13rem rail would break a 3.4rem display face into five lines. The cut
+   * spans both, because it is the seam between the film and the paper and
+   * stopping it two thirds across would say something that is not true.
+   */
+  .grid {
+    grid-template-columns: minmax(0, 1.7fr) minmax(11rem, 1fr);
+    grid-template-areas:
+      "rule  rule"
+      "made  yours";
+    column-gap: 4rem;
+    /* The handed-over line sits on the heading's last baseline. */
+    align-items: end;
+  }
+
   .rule {
     margin-block: 0 4rem;
   }
@@ -48,6 +84,9 @@
   }
 
   .yours {
-    margin-top: 1.75rem;
+    /* The grid supplies the offset now; a margin would push it off baseline. */
+    margin-top: 0;
+    /* Optical: display type overshoots its baseline, body type does not. */
+    padding-bottom: 0.35rem;
   }
 }

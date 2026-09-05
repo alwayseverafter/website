@@ -12,9 +12,14 @@
   border-top: var(--hair);
 }
 
+/*
+ * A grid rather than a flex column, so the desktop rule below can pair the
+ * heading with the action instead of stacking them. Below 48rem it is a single
+ * column and behaves exactly as the flex column did.
+ */
 .inner {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.75rem;
 }
 
@@ -137,6 +142,18 @@
 @media (min-width: 48rem) {
   .section {
     padding-block: 6rem 7rem;
+  }
+
+  /*
+   * "Begin." takes a narrow rail and the action takes the rest. The section
+   * has exactly two children — the heading, then either the action or the
+   * notice — so auto-placement puts them in the right cells without either
+   * needing to name an area.
+   */
+  .inner {
+    grid-template-columns: minmax(11rem, 1fr) minmax(0, 1.7fr);
+    column-gap: 4rem;
+    align-items: start;
   }
 
   .title {
