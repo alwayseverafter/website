@@ -40,9 +40,31 @@
   display: contents;
 }
 
+/*
+ * Absolutely positioned inside the shared grid cell, so `height: 100%` has a
+ * definite containing block to resolve against.
+ *
+ * As plain grid items the percentage never resolved and both regimes silently
+ * fell back to the master's intrinsic ratio. Measured:
+ *
+ *   regime A, 1280x520:  1265x712 inside a 1265x520 stage. 192px of overflow,
+ *                        clipped, which also pushed `object-position: center`
+ *                        off centre — the one thing it exists to hold.
+ *   regime B, 1440x900:  1080x1920 inside a 1425x900 stage. A 2.13x blow-up
+ *                        cropped to its middle 47%, throwing away exactly the
+ *                        dance floor that regime B was written to protect.
+ *
+ * `!important` and `100dvh` were both measured and both still resolved to the
+ * intrinsic height; only a containing block fixes it. `.stage` is already
+ * `position: absolute`, and `grid-area` keeps the cell as that block.
+ *
+ * R3: both regimes were written, shipped, and had never once executed.
+ */
 .still,
 .film {
   grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -62,12 +84,12 @@
  * mirrors LANDSCAPE_MEDIA in Door.tsx, which owns the complement.
  */
 @media (min-aspect-ratio: 3 / 4) and (min-height: 600px) {
-  .stage {
-    place-items: center;
-  }
-
+  /* The centred 9:16 column. Measured after: 506x900 at 1440x900, 450x800 at
+     1280x800 — the width the section note below already assumed. */
   .still,
   .film {
+    /* `margin: auto` against `inset: 0` is what centres an auto-width box. */
+    margin: auto;
     width: auto;
     height: 100%;
     aspect-ratio: 9 / 16;
