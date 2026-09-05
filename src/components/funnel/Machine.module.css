@@ -1,0 +1,79 @@
+/*
+ * The Machine. Mobile first: every rule here is the phone rule, and desktop is
+ * the media query at the bottom. See docs/LESSONS.md R9.
+ *
+ * No boxes. The only separator is a single hairline at one weight, which is why
+ * the facts are divided by borders rather than sat inside cards.
+ */
+
+.section {
+  padding-block: 3.5rem;
+  border-top: var(--hair);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.title {
+  font-size: 2.1rem;
+  /* Display type is set tight; a long line at 320px still needs somewhere to break. */
+  max-width: 14ch;
+}
+
+.facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fact {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.14rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  padding-block: 1.15rem;
+  border-top: var(--hair);
+  max-width: 40ch;
+}
+
+/* The list closes on a hairline, so the section does not trail off. */
+.fact:last-child {
+  border-bottom: var(--hair);
+}
+
+@media (min-width: 48rem) {
+  .section {
+    padding-block: 6rem;
+  }
+
+  .grid {
+    display: grid;
+    /*
+     * The heading holds a narrow column and the facts take the rest, which is
+     * the editorial arrangement the brand asks for and keeps the measure of the
+     * sentences under 40 characters at any width.
+     */
+    grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.6fr);
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  .title {
+    font-size: 2.9rem;
+  }
+
+  .fact {
+    font-size: 1.24rem;
+    padding-block: 1.5rem;
+  }
+}
