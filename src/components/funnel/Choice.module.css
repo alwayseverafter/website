@@ -1,0 +1,213 @@
+/*
+ * The Choice. Mobile first: the two tiers stack, and side by side is the
+ * desktop media query. See docs/LESSONS.md R9, and note that 90% or more of
+ * this site's traffic is a phone.
+ *
+ * No boxes and no badges. Separation is space and a single hairline at one
+ * weight. Selection is shown by the colour of that hairline and by a word,
+ * never by a pill, a tint or a shadow.
+ */
+
+.section {
+  padding-block: 3.5rem;
+  border-top: var(--hair);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.title {
+  font-size: 2.1rem;
+}
+
+.lede {
+  max-width: 30ch;
+}
+
+/* A notice, not a price. Shown only when a locale has no confirmed amounts. */
+.notice {
+  font-family: var(--f-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  border-top: var(--hair);
+  border-bottom: var(--hair);
+  padding-block: 1.25rem;
+  margin: 0;
+  max-width: 36ch;
+}
+
+/* Fieldset resets. `min-inline-size: 0` stops its legacy intrinsic minimum. */
+.group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+/* Named for assistive technology. The visible heading carries the same job. */
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tiers {
+  display: flex;
+  flex-direction: column;
+}
+
+.tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding-block: 1.5rem 1.9rem;
+  /*
+   * Each tier is introduced by one hairline, which is also what separates the
+   * two when they are stacked. Marking the chosen tier darkens that same rule
+   * rather than adding a second one, so the weight never doubles and the
+   * selection changes a colour and never a width.
+   */
+  border-top: var(--hair);
+  transition: border-color var(--t);
+}
+
+.tier[data-selected="true"] {
+  border-top-color: var(--ink);
+}
+
+/* The control stays focusable and stays out of the layout. */
+.radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Keyboard focus lands on the hidden radio, so the ring is drawn on the tier. */
+.tier:has(.radio:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 6px;
+}
+
+.name {
+  font-size: 1.55rem;
+}
+
+.price {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink);
+  /* Old style figures sit better beside display type than lining ones. */
+  font-variant-numeric: oldstyle-nums;
+  margin-block: 0.15rem 0.35rem;
+}
+
+.line {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 34ch;
+}
+
+/*
+ * The honest constraint. It gets a hairline and the full ink of the page rather
+ * than a badge, because it is a fact about how the thing is made and not a
+ * scarcity tactic.
+ */
+.constraint {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  color: var(--ink);
+  border-top: var(--hair);
+  padding-top: 0.95rem;
+  margin-top: 0.55rem;
+  max-width: 34ch;
+}
+
+.state {
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-indent: 0.28em;
+  color: var(--ink-3);
+  margin-top: 0.85rem;
+  transition: color var(--t);
+}
+
+.tier[data-selected="true"] .state {
+  color: var(--ink);
+}
+
+@media (hover: hover) {
+  .tier:hover .state {
+    color: var(--ink);
+  }
+}
+
+@media (min-width: 48rem) {
+  .section {
+    padding-block: 6rem;
+  }
+
+  .inner {
+    gap: 3rem;
+  }
+
+  .title {
+    font-size: 2.9rem;
+  }
+
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /*
+     * Side by side, the separation is space. Each column still opens on its own
+     * hairline, so no vertical rule is needed and none is drawn.
+     */
+    column-gap: 4rem;
+    align-items: start;
+  }
+
+  .tier {
+    padding-block: 1.6rem 2rem;
+  }
+
+  .name {
+    font-size: 1.8rem;
+  }
+
+  .price {
+    font-size: 2.3rem;
+  }
+}
