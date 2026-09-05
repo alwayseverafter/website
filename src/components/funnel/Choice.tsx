@@ -46,19 +46,80 @@ type TierCopy = {
   constraint?: string;
 };
 
-export const TIER_COPY: Record<Tier, TierCopy> = {
-  invitation: {
-    name: "The Invitation",
-    delivery: "Live in an hour.",
-    work: "You build it. Your names, your date and your style are already in place when you arrive.",
-    guests: "Unlimited guests.",
+/**
+ * The tier names and their three lines, per locale.
+ *
+ * Keyed by locale first, because a tier name is copy rather than an id: a
+ * German visitor who has pressed DE and is still reading "The Commission" has
+ * been shown a control that does nothing (LESSONS.md R3). The German wording
+ * is the wording `src/lib/i18n/de.ts` already uses for the same two tiers, so
+ * the funnel and the legal pages call them the same thing.
+ */
+export const TIER_COPY: Record<Locale, Record<Tier, TierCopy>> = {
+  en: {
+    invitation: {
+      name: "The Invitation",
+      delivery: "Live in an hour.",
+      work: "You build it. Your names, your date and your style are already in place when you arrive.",
+      guests: "Unlimited guests.",
+    },
+    commission: {
+      name: "The Commission",
+      delivery: "Ready in forty eight hours.",
+      work: "Our studio builds it from a short brief. You approve it before a single guest sees it.",
+      guests: "Unlimited guests.",
+      constraint: "Twelve a month. A person builds each one.",
+    },
   },
-  commission: {
-    name: "The Commission",
-    delivery: "Ready in forty eight hours.",
-    work: "Our studio builds it from a short brief. You approve it before a single guest sees it.",
-    guests: "Unlimited guests.",
-    constraint: "Twelve a month. A person builds each one.",
+  de: {
+    invitation: {
+      name: "Die Einladung",
+      delivery: "In einer Stunde online.",
+      work: "Ihr baut sie. Eure Namen, euer Datum und euer Stil stehen schon darin, wenn ihr ankommt.",
+      guests: "Beliebig viele Gäste.",
+    },
+    commission: {
+      name: "Die Auftragsarbeit",
+      delivery: "In achtundvierzig Stunden fertig.",
+      work: "Unser Atelier baut sie nach einem kurzen Briefing. Ihr gebt sie frei, bevor ein einziger Gast sie sieht.",
+      guests: "Beliebig viele Gäste.",
+      constraint: "Zwölf im Monat. Ein Mensch baut jede einzelne.",
+    },
+  },
+};
+
+/** Everything the section says around the two tiers. */
+type SectionCopy = {
+  kicker: string;
+  title: string;
+  lede: string;
+  legend: string;
+  /** The visible state word on a card. Not read by assistive technology. */
+  chosen: string;
+  choose: string;
+  /** R12. Shown instead of the tiers while this locale has no confirmed price. */
+  unpriced: string;
+};
+
+const SECTION_COPY: Record<Locale, SectionCopy> = {
+  en: {
+    kicker: "Price",
+    title: "Two ways in.",
+    lede: "One is yours to build. One we build for you.",
+    legend: "Choose how your invitation is made",
+    chosen: "Chosen",
+    choose: "Choose",
+    unpriced: "Pricing for this language is not confirmed yet, so it is not shown.",
+  },
+  de: {
+    kicker: "Preis",
+    title: "Zwei Wege hinein.",
+    lede: "Einen baut ihr. Einen bauen wir für euch.",
+    legend: "Wählt, wie eure Einladung entsteht",
+    chosen: "Gewählt",
+    choose: "Wählen",
+    unpriced:
+      "Die Preise für diese Sprache stehen noch nicht fest, deshalb werden sie hier nicht gezeigt.",
   },
 };
 
@@ -162,6 +223,8 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
   }, []);
 
   const pricing = getPricing(locale);
+  const copy = SECTION_COPY[locale];
+  const tiers = TIER_COPY[locale];
 
   return (
     <section
@@ -172,13 +235,11 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
     >
       <div className={`wrap ${styles.inner}`}>
         <header className={styles.head}>
-          <p className="kicker">Price</p>
+          <p className="kicker">{copy.kicker}</p>
           <h2 id="choice-title" className={`display ${styles.title}`}>
-            Two ways in.
+            {copy.title}
           </h2>
-          <p className={`lede ${styles.lede}`}>
-            One is yours to build. One we build for you.
-          </p>
+          <p className={`lede ${styles.lede}`}>{copy.lede}</p>
         </header>
 
         {pricing === null ? (
@@ -188,17 +249,15 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
            * rather than charging one number and displaying another.
            */
           <p className={styles.notice} role="status">
-            Pricing for this language is not confirmed yet, so it is not shown.
+            {copy.unpriced}
           </p>
         ) : (
           <fieldset className={styles.group}>
-            <legend className={styles.legend}>
-              Choose how your invitation is made
-            </legend>
+            <legend className={styles.legend}>{copy.legend}</legend>
 
             <div className={styles.tiers}>
               {TIER_ORDER.map((id) => {
-                const copy = TIER_COPY[id];
+                const tier_ = tiers[id];
                 const isSelected = tier === id;
                 return (
                   <label
@@ -214,15 +273,15 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
                       checked={isSelected}
                       onChange={() => select(id)}
                     />
-                    <span className={`display ${styles.name}`}>{copy.name}</span>
+                    <span className={`display ${styles.name}`}>{tier_.name}</span>
                     <span className={styles.price}>
                       {formatPrice(locale, pricing[id])}
                     </span>
-                    <span className={styles.line}>{copy.delivery}</span>
-                    <span className={styles.line}>{copy.work}</span>
-                    <span className={styles.line}>{copy.guests}</span>
-                    {copy.constraint === undefined ? null : (
-                      <span className={styles.constraint}>{copy.constraint}</span>
+                    <span className={styles.line}>{tier_.delivery}</span>
+                    <span className={styles.line}>{tier_.work}</span>
+                    <span className={styles.line}>{tier_.guests}</span>
+                    {tier_.constraint === undefined ? null : (
+                      <span className={styles.constraint}>{tier_.constraint}</span>
                     )}
                     {/*
                      * The visible state word. The radio already carries the
@@ -231,7 +290,7 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
                      * selection is not signalled by colour alone.
                      */}
                     <span className={styles.state} aria-hidden="true">
-                      {isSelected ? "Chosen" : "Choose"}
+                      {isSelected ? copy.chosen : copy.choose}
                     </span>
                   </label>
                 );
