@@ -1,0 +1,141 @@
+/**
+ * Atelier. The site is the frame, the invitations are the art, so the funnel
+ * carries no chromatic accent of its own. Colour enters only through an
+ * invitation being previewed inside it.
+ *
+ * Mobile first throughout. 90% or more of traffic is a phone, so every rule
+ * here is the phone rule and desktop is the media query. See docs/LESSONS.md R9.
+ */
+
+:root {
+  --paper: #faf8f5;
+  --card: #ffffff;
+  --ink: #131a26;
+  --ink-2: #4a5568;
+  --ink-3: #9aa1ac;
+  --rule: #dcd8d2;
+  --door: #0b0c0e;
+
+  --f-display: var(--f-italiana), "Didot", Georgia, serif;
+  --f-body: var(--f-cormorant), Georgia, serif;
+  --f-ui: var(--f-jost), system-ui, -apple-system, sans-serif;
+
+  /* One rule weight. Never two. */
+  --hair: 1px solid var(--rule);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t: 600ms var(--ease);
+  --t-door: 1500ms cubic-bezier(0.7, 0, 0.2, 1);
+
+  /* The one shadow that exists: a card lifting off paper. */
+  --lift: 0 18px 40px -34px rgba(19, 26, 38, 0.5);
+
+  /* Minimum tap target. R9. Never smaller, at any width. */
+  --tap: 44px;
+
+  --gut: 1.25rem;
+}
+
+@media (min-width: 48rem) {
+  :root { --gut: 2.5rem; }
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  /* R2: no scroll-behavior here. Scope it to the surface that needs it. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-ui);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* iOS URL bar crops 100vh. Nothing here relies on viewport height anyway. */
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+img,
+video { max-width: 100%; display: block; }
+
+/* Tap targets. R9. Applies at every width, phone included. */
+a,
+button,
+[role="button"],
+input,
+select {
+  min-height: var(--tap);
+  font-family: inherit;
+}
+
+button { touch-action: manipulation; }
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ── type scale ─────────────────────────────────────────────────────── */
+
+.display {
+  font-family: var(--f-display);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.18rem;
+  line-height: 1.62;
+  color: var(--ink-2);
+  max-width: 33ch;
+  margin: 0;
+}
+
+.kicker {
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  /* Tracking pushes the optical centre right; indent pulls it back. */
+  text-indent: 0.34em;
+  margin: 0;
+}
+
+.hair { border: 0; border-top: var(--hair); margin: 3rem 0; }
+
+.wrap {
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
+
+@media (min-width: 48rem) {
+  .lede { font-size: 1.32rem; }
+  .hair { margin: 4.5rem 0; }
+}
+
+/* ── motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
