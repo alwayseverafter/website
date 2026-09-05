@@ -1,0 +1,208 @@
+/*
+ * The Mirror. R2: a CSS Module.
+ *
+ * No boxes. The three controls are hairlines and space, which is what keeps the
+ * section from reading as a web form on a page whose argument is print.
+ */
+
+.mirror {
+  padding-block: 0 4rem;
+  /* Anchored from the top hairline row, so #mirror does not land under it. */
+  scroll-margin-top: 3.5rem;
+}
+
+/*
+ * `minmax(0, 1fr)` rather than a bare `auto` track. A grid item's automatic
+ * minimum size is its min-content width, and an `<input>` carries an intrinsic
+ * width of about twenty characters, so an auto track is pushed wider than the
+ * page and the preview leaves the screen to the right. Measured at 320 px.
+ */
+.grid {
+  display: grid;
+  gap: 2.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "preview"
+    "form";
+}
+
+.head {
+  grid-area: head;
+  min-width: 0;
+}
+
+.h {
+  font-size: 2.1rem;
+  max-width: 14ch;
+  /* Two short sentences. Balanced lines stop the second one being orphaned
+     across the break. Ignored where unsupported, which costs nothing. */
+  text-wrap: balance;
+}
+
+.lede {
+  margin-top: 1rem;
+}
+
+/* ── the mirror itself ──────────────────────────────────────────────── */
+
+.previewCol {
+  grid-area: preview;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  min-width: 0;
+}
+
+/*
+ * Capped narrow on a phone on purpose. Focusing a field scrolls it above the
+ * keyboard, and the preview directly above it has to survive that: a card
+ * taller than the remaining strip would be the one thing the visitor cannot see
+ * at the exact moment it becomes theirs.
+ */
+.preview {
+  width: 100%;
+  max-width: 14rem;
+}
+
+@media (min-width: 26rem) {
+  .preview {
+    max-width: 17rem;
+  }
+}
+
+/* ── the fields ─────────────────────────────────────────────────────── */
+
+.form {
+  grid-area: form;
+  min-width: 0;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+/*
+ * Kicker treatment, but at --ink-2 rather than the brand's --ink-3. A kicker is
+ * decoration and may sit quiet; a form label is the only thing telling somebody
+ * what to type, and --ink-3 on --paper is 2.4:1, which fails.
+ */
+.label {
+  font-family: var(--f-ui);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.input {
+  /* A hairline under the field is the entire control. Rule 1 of the house. */
+  appearance: none;
+  width: 100%;
+  /* An input's intrinsic width is roughly twenty characters. Without this it
+     sets the floor for its track and widens the whole section. */
+  min-width: 0;
+  border: 0;
+  border-bottom: var(--hair);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0.4rem 0 0.65rem;
+  /* Their names, set in the display face, in the field itself. Also 20px, and
+     anything under 16px makes iOS zoom the page on focus. */
+  font-family: var(--f-display);
+  font-size: 1.25rem;
+  line-height: 1.35;
+  transition: border-color var(--t);
+}
+
+/* Not :focus-visible. The hairline darkening is the field waking up, and it
+   should do that for a thumb as well as for a keyboard. The global
+   :focus-visible outline still handles the keyboard case on top of this. */
+.input:focus {
+  border-bottom-color: var(--ink);
+}
+
+.date {
+  font-family: var(--f-ui);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  /* Safari centres a date input's own control box; keep it on the baseline. */
+  display: block;
+}
+
+/* ── what the card is showing, in words ─────────────────────────────── */
+
+.status {
+  margin: 1.75rem 0 0;
+  font-family: var(--f-ui);
+  font-size: 0.8rem;
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 38ch;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  /* globals.css sets a 44px min-height on every input; a hidden node must opt
+     out of anything that would give it size back. */
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── desktop ────────────────────────────────────────────────────────── */
+
+@media (min-width: 48rem) {
+  .mirror {
+    padding-block: 0 6rem;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    grid-template-areas:
+      "preview head"
+      "preview form";
+    align-content: start;
+    column-gap: 3.5rem;
+    row-gap: 2rem;
+  }
+
+  .previewCol {
+    /* align-self is what makes sticky work in a grid: a stretched item is
+       already as tall as its row and has nothing to stick within. */
+    position: sticky;
+    top: 3rem;
+    align-self: start;
+    justify-items: start;
+  }
+
+  .preview {
+    max-width: none;
+  }
+
+  .h {
+    font-size: 2.9rem;
+  }
+
+  .fields {
+    gap: 2rem;
+  }
+}
