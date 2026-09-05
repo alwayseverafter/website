@@ -1,0 +1,51 @@
+/* R2: a CSS Module, so nothing here can leak to a page that embeds it. */
+
+.frame {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  background: var(--card);
+  border: var(--hair);
+  text-align: center;
+}
+
+.frame[data-fit="page"] { aspect-ratio: 9 / 16; }
+.frame[data-fit="card"] { aspect-ratio: 3 / 4; }
+.frame[data-fit="thumb"] { aspect-ratio: 3 / 4; }
+
+.inner { padding: 8cqh 6cqw; }
+
+.kicker {
+  font-family: var(--f-ui);
+  font-size: clamp(0.5rem, 3cqw, 0.62rem);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.names {
+  font-family: var(--f-display);
+  font-size: clamp(1.2rem, 13cqw, 4.4rem);
+  line-height: 1.08;
+  margin: 4cqh 0;
+}
+
+.amp {
+  font-family: var(--f-body);
+  font-style: italic;
+  opacity: 0.5;
+  font-size: 0.72em;
+}
+
+.date {
+  font-family: var(--f-ui);
+  font-size: clamp(0.5rem, 3.4cqw, 0.68rem);
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0;
+}
