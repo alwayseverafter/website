@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import {
-  DEFAULT_LOCALE, readStoredLocale, storeLocale, type Locale,
+  DEFAULT_LOCALE, HTML_LANG, readStoredLocale, storeLocale, type Locale,
 } from "@/lib/i18n";
 import { THEME_IDS, type ThemeId } from "@/invite/types";
 import { useCouple } from "@/lib/couple";
@@ -71,6 +71,20 @@ export function Funnel() {
   }, []);
 
   /**
+   * The document's language, kept in step with the switch.
+   *
+   * `layout.tsx` is a server component and renders `lang="en"` for every
+   * visitor, so without this a visitor who presses DE gets German announced by
+   * an English speech synthesiser and hyphenated by English rules. This is the
+   * only place that knows the chosen locale, so it is the only place that can
+   * say so. The legal pages need nothing like this: they know their locale at
+   * request time and declare it on their own `<main>`, in `LegalPage.tsx`.
+   */
+  useEffect(() => {
+    document.documentElement.lang = HTML_LANG[locale];
+  }, [locale]);
+
+  /**
    * `/styles/[theme]` sends visitors back as `?theme=<id>&from=styles`, so a
    * couple who fell for one style on a search-landed page arrives with it
    * already chosen. Read once from the URL rather than through
@@ -92,7 +106,7 @@ export function Funnel() {
       <Turn locale={locale} />
       <Mirror locale={locale} />
       <Styles locale={locale} />
-      <Machine />
+      <Machine locale={locale} />
       <Choice locale={locale} />
       <Close locale={locale} />
     </>

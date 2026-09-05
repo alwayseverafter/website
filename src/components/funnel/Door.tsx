@@ -72,6 +72,21 @@ const LANDSCAPE_MEDIA = "(min-aspect-ratio: 3 / 4)";
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 
+/**
+ * The only two words the door says in its own voice.
+ *
+ * The wordmark is the brand and is never translated, which is why it is not in
+ * here. These two are chrome, and a German visitor who has just pressed DE and
+ * is still looking at the word "Open" has been told the switch does nothing.
+ *
+ * "Stile" is the word The Styles already uses for itself, so the link and the
+ * heading it scrolls to agree.
+ */
+const COPY: Record<Locale, { open: string; styles: string }> = {
+  en: { open: "Open", styles: "Styles" },
+  de: { open: "Öffnen", styles: "Stile" },
+};
+
 /** Both masters are 3.4s. Only ever used if the browser will not report it. */
 const FILM_SECONDS = 3.4;
 
@@ -283,6 +298,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
   if (phase === "gone") return null;
 
   const shut = phase === "closed";
+  const copy = COPY[locale];
 
   return (
     <>
@@ -353,7 +369,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
             <span />
           )}
           <a className={styles.topItem} href="#styles">
-            Styles
+            {copy.styles}
           </a>
         </nav>
 
@@ -376,7 +392,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
             <span className={styles.mark}>Always Ever After</span>
             <span className={styles.rule} />
           </span>
-          <span className={styles.label}>Open</span>
+          <span className={styles.label}>{copy.open}</span>
         </button>
 
         <div className={styles.bloom} aria-hidden="true" />
