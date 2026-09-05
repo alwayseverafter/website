@@ -73,8 +73,26 @@ const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 /** Both masters are 3.4s. Only ever used if the browser will not report it. */
 const FILM_SECONDS = 3.4;
 
-/** The white bloom over the last frames, so the handover needs no white ending. */
-const BLOOM_MS = 400;
+/**
+ * The white bloom over the last frames, so the handover needs no white ending.
+ *
+ * 200, not 400, to match max-und-lena: `Opener.tsx` sets the bloom at
+ * `hand - 200`, with the note "longer bloom would wash out the arrival it
+ * exists to hand over from". Note that `docs/opener-film.md` says "~250ms" —
+ * the shipped implementation is the authority here, and it uses 200.
+ */
+const BLOOM_MS = 200;
+
+/**
+ * How long before the clip ends the handover runs, matching max-und-lena's
+ * `v.duration * 1000 - 80`. The film's final frame is therefore never shown:
+ * the cut happens under the bloom while the doors are still moving, which is
+ * what makes the arrival feel handed over rather than played out.
+ */
+const FILM_TAIL_MS = 80;
+
+/** Max-und-lena's floor on the handover, so a stub clip still gets a beat. */
+const HAND_MIN_MS = 400;
 
 /** The veil fading off the arrival. Safety net only; `animationend` leads. */
 const VEIL_MS = 700;
@@ -208,11 +226,17 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
 
     const seconds =
       Number.isFinite(video.duration) && video.duration > 0 ? video.duration : FILM_SECONDS;
-    const total = seconds * 1000;
 
-    after(Math.max(0, total - BLOOM_MS), () => enter("blooming"));
-    /* `ended` leads. This only covers a clip that stalls and never fires it. */
-    after(total + 300, finish);
+    /*
+     * The handover, on max-und-lena's clock: `max(400, duration - 80)`. It
+     * leads now, where `ended` used to, because cutting on `ended` shows the
+     * film's last frame and then hands over from a still. Cutting 80ms short
+     * keeps the doors in motion under the bloom.
+     */
+    const hand = Math.max(HAND_MIN_MS, seconds * 1000 - FILM_TAIL_MS);
+
+    after(Math.max(0, hand - BLOOM_MS), () => enter("blooming"));
+    after(hand, finish);
 
     void video.play().catch((error: unknown) => {
       /*
@@ -229,6 +253,8 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    /* The backstop now, not the lead: `hand` fires 80ms earlier. `finish` is
+       guarded on phase, so arriving here second is a no-op. */
     const onEnded = () => finish();
     video.addEventListener("ended", onEnded);
     return () => video.removeEventListener("ended", onEnded);
