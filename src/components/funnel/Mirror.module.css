@@ -141,6 +141,70 @@
   display: block;
 }
 
+/*
+ * The native control stays. `type="date"` is what hands a phone the OS date
+ * wheel, and 90% of this traffic is a phone, so replacing it with three styled
+ * boxes would trade the primary platform's best control for a desktop
+ * cosmetic. Only its chrome is brought onto the house sheet: the UA sets the
+ * segments in its own font and ships a blue-tinted picker glyph, which were
+ * the only two marks on this page not drawn in the site's own hand.
+ */
+.date::-webkit-datetime-edit {
+  font-family: var(--f-ui);
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  padding: 0;
+}
+
+.date::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+/* The slashes are punctuation between the values, not values themselves. */
+.date::-webkit-datetime-edit-text {
+  color: var(--ink-3);
+  padding: 0 0.12em;
+}
+
+/*
+ * A segment being edited is marked the way this page marks everything else:
+ * ink on paper. The UA default is a system-blue fill, the one saturated colour
+ * anywhere in the funnel.
+ */
+.date::-webkit-datetime-edit-day-field:focus,
+.date::-webkit-datetime-edit-month-field:focus,
+.date::-webkit-datetime-edit-year-field:focus {
+  background: var(--ink);
+  color: var(--paper);
+  outline: none;
+}
+
+/*
+ * The picker glyph, in ink rather than in blue. R9: the UA gives it about
+ * 13px of hit area; the padding takes it past 44 without moving the hairline,
+ * and the negative margin keeps it flush to the field's right edge.
+ */
+.date::-webkit-calendar-picker-indicator {
+  padding: 1rem;
+  margin-inline: 0 -0.5rem;
+  filter: grayscale(1);
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity var(--t);
+}
+
+@media (hover: hover) {
+  .date::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+}
+
+.date::-webkit-calendar-picker-indicator:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: -0.6rem;
+}
+
 /* ── what the card is showing, in words ─────────────────────────────── */
 
 .status {

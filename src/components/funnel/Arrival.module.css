@@ -8,7 +8,17 @@
 
 .root {
   position: relative;
+  /*
+   * Centred, so the invitation sits in the middle of the screen it arrives on.
+   * Measured before: the card began at y=2 and left a 358px void beneath it,
+   * which read as a section that had failed to finish loading rather than as
+   * the one object the whole door was opened to show.
+   */
+  display: grid;
+  place-items: center;
+  min-height: 100vh; /* floor for anything without dvh */
   min-height: 100dvh;
+  padding-block: 1.5rem;
   background: var(--paper);
 }
 
@@ -77,7 +87,9 @@
  */
 @media print {
   .root {
+    display: block;
     min-height: 0;
+    padding-block: 0;
   }
 
   .stage {

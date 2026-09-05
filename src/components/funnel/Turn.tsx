@@ -43,7 +43,7 @@ export function Turn({ locale = "en" }: { locale?: Locale }) {
 
   return (
     <section className={styles.turn} aria-labelledby={HEADING_ID}>
-      <div className="wrap">
+      <div className={`wrap ${styles.grid}`}>
         {/* Paper white returns. The hairline is the cut between film and page. */}
         <hr className={`hair ${styles.rule}`} />
         <h2 id={HEADING_ID} className={`display ${styles.made}`}>
