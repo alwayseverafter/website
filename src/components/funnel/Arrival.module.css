@@ -1,0 +1,86 @@
+/**
+ * 1. The Arrival. R2: a CSS Module, so none of this can reach any other section.
+ *
+ * This file's whole job is to get out of the way. The invitation is the art and
+ * it owns everything inside its own frame, including its type scale, which is
+ * why nothing here reaches into the renderer.
+ */
+
+.root {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--paper);
+}
+
+/* The door moved focus here. It should not draw a ring around the viewport. */
+.root:focus {
+  outline: none;
+}
+
+/*
+ * Full bleed on phones, which is the 90% case and the shape the 9:16 master was
+ * cut for.
+ */
+.stage {
+  width: 100%;
+  margin-inline: auto;
+}
+
+/*
+ * The same bound as regime B in Door.module.css, and the same width: a 9:16
+ * column is 56.25dvh across, so the invitation opens exactly where the film
+ * column was standing. The handover reads as one continuous object rather than
+ * as two components swapping over.
+ */
+@media (min-aspect-ratio: 3 / 4) and (min-height: 600px) {
+  .stage {
+    max-width: min(56.25dvh, 100%);
+  }
+}
+
+/*
+ * Depth marks. Absolute so they take no space, and pinned to fractions of the
+ * section's own height rather than the viewport's, so what they measure is how
+ * much of the invitation was read.
+ *
+ * R2 again: the offsets are classes here rather than inline styles, so the only
+ * place this component's geometry is written down is this file.
+ */
+.mark {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.mark[data-depth="25"] {
+  top: 25%;
+}
+
+.mark[data-depth="50"] {
+  top: 50%;
+}
+
+.mark[data-depth="75"] {
+  top: 75%;
+}
+
+.mark[data-depth="100"] {
+  top: calc(100% - 1px);
+}
+
+/*
+ * R10. The section has one variant and the print block covers it: B3 was a
+ * near-blank 844px sheet because a `min-height` was reset for one variant and
+ * not the other.
+ */
+@media print {
+  .root {
+    min-height: 0;
+  }
+
+  .stage {
+    max-width: none;
+  }
+}
