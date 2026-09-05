@@ -1,0 +1,155 @@
+/*
+ * The Close. Mobile first: the button is full width on a phone and only stops
+ * being full width at the desktop breakpoint. See docs/LESSONS.md R9.
+ *
+ * One button, no box around it, no shadow under it. The button is filled ink
+ * because it is the single action on the page and a hairline outline at this
+ * point in the sequence would be coy.
+ */
+
+.section {
+  padding-block: 3.5rem 4.5rem;
+  border-top: var(--hair);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.title {
+  font-size: 2.4rem;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.summary {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.18rem;
+  line-height: 1.55;
+  color: var(--ink);
+  font-variant-numeric: oldstyle-nums;
+  margin: 0;
+  max-width: 34ch;
+}
+
+.button {
+  /* Full width on a phone, which is where nearly all of this traffic is. */
+  width: 100%;
+  min-height: var(--tap);
+  padding: 1rem 2rem;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--f-ui);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  text-indent: 0.24em;
+  cursor: pointer;
+  transition: background-color var(--t), color var(--t);
+}
+
+@media (hover: hover) {
+  .button:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
+
+/*
+ * Pending. The label already says "opening checkout", so the state is carried
+ * by words; this only stops the cursor from promising another press.
+ */
+.button[aria-disabled="true"] {
+  cursor: progress;
+  color: var(--rule);
+}
+
+@media (hover: hover) {
+  .button[aria-disabled="true"]:hover {
+    background: var(--ink);
+    color: var(--rule);
+  }
+}
+
+/* The one line the price argument rests on. It sits under the button, alone. */
+.pledge {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0.15rem 0 0;
+}
+
+/*
+ * A failure, said plainly where the button is. Marked by a rule and by its
+ * words, never by red, because nothing on this page carries a colour of its own.
+ */
+.error {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink);
+  border-top: var(--hair);
+  border-bottom: var(--hair);
+  padding-block: 0.9rem;
+  margin: 0.5rem 0 0;
+  max-width: 40ch;
+}
+
+.fine {
+  font-family: var(--f-ui);
+  font-size: 0.78rem;
+  font-weight: 300;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  margin: 0;
+  max-width: 38ch;
+}
+
+.notice {
+  font-family: var(--f-body);
+  font-size: 1.08rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  border-top: var(--hair);
+  border-bottom: var(--hair);
+  padding-block: 1.25rem;
+  margin: 0;
+  max-width: 36ch;
+}
+
+@media (min-width: 48rem) {
+  .section {
+    padding-block: 6rem 7rem;
+  }
+
+  .title {
+    font-size: 3.2rem;
+  }
+
+  .button {
+    /* Off the phone it takes its own width rather than the page's. */
+    width: auto;
+    min-width: 20rem;
+  }
+
+  .summary {
+    font-size: 1.3rem;
+  }
+}
