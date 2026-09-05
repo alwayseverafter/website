@@ -1,0 +1,68 @@
+/*
+ * Atelier: no box, no pill, no flag. One hairline row, two words, one of them
+ * lit. The control has to disappear until it is wanted.
+ */
+
+.row {
+  display: flex;
+  align-items: center;
+  /* Pushed to the end of whatever bar holds it. */
+  margin-inline-start: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  /* R9: 44px at 320px, and at every other width. The label is tiny; the
+     target is not. */
+  min-height: var(--tap);
+  min-width: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.25rem;
+
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-3);
+  transition: color var(--t);
+}
+
+.current {
+  color: var(--ink);
+}
+
+.sep {
+  color: var(--rule);
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  /* The tracking on the labels already opens the gap. */
+  margin-inline: -0.1rem;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--ink);
+  }
+}
+
+/* The two letters are for the eye. The full name is for a screen reader. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
