@@ -1,17 +1,23 @@
+import type { Metadata } from "next";
+import { Funnel } from "@/components/funnel/Funnel";
+
 /**
- * The funnel. One page carries the whole sequence, and its structure is the
- * argument. See docs/superpowers/specs/2026-09-06-alwayseverafter-funnel-design.md
- *
- * Sections are assembled here and owned individually, so they can be built and
- * reviewed independently.
+ * The home page is the funnel. It stays a server component so it can carry its
+ * own metadata, and hands the whole sequence to one client boundary, because
+ * locale and the couple's names are shared across sections.
  */
+export const metadata: Metadata = {
+  title: "Always Ever After",
+  description:
+    "A wedding invitation that opens. One link, sent to everyone you love, "
+    + "on any phone, with no app and no account. Priced once, not per guest.",
+  alternates: { canonical: "/" },
+};
+
 export default function Home() {
   return (
     <main>
-      {/* 0 Door · 1 Arrival · 2 Turn · 3 Mirror · 4 Styles · 5 Machine · 6 Choice · 7 Close */}
-      <p className="wrap" style={{ paddingBlock: "4rem" }}>
-        Scaffold. Sections land here.
-      </p>
+      <Funnel />
     </main>
   );
 }
