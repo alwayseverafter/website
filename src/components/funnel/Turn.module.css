@@ -1,0 +1,53 @@
+/*
+ * R2: a CSS Module, so nothing here can reach another section.
+ *
+ * No viewport units anywhere in the funnel chrome either. R1 scopes its ban to
+ * `src/invite/**`, but a section that avoids them can be lifted into a narrower
+ * frame later without the bug coming back, and rem plus one breakpoint reads
+ * the same at 320 px as it does at 1440 px.
+ */
+
+.turn {
+  /* Space is the separator, so the section is mostly space. The top pad is the
+     Turn's own air, so the cut still breathes if the section above it ends
+     flush. */
+  padding-block: 3rem 3.5rem;
+}
+
+.rule {
+  /* The global `.hair` carries the weight; this only tightens the rhythm so the
+     cut sits close to the film above it. */
+  margin-block: 0 3rem;
+}
+
+.made {
+  font-size: 2.1rem;
+  /* A measure, not a width. Long enough to break in the right place at 320 px. */
+  max-width: 15ch;
+  /* The line the whole section rests on. Balanced, so it never leaves one word
+     alone on the second line. Ignored where unsupported, which costs nothing. */
+  text-wrap: balance;
+}
+
+.yours {
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 48rem) {
+  .turn {
+    padding-block: 4rem 5rem;
+  }
+
+  .rule {
+    margin-block: 0 4rem;
+  }
+
+  .made {
+    font-size: 3.4rem;
+    max-width: 18ch;
+  }
+
+  .yours {
+    margin-top: 1.75rem;
+  }
+}
