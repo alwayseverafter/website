@@ -20,6 +20,69 @@ import styles from "./Close.module.css";
  * session when the keys are absent. LESSONS.md R3 and R12.
  */
 
+/**
+ * Everything this section says. The tier's own name and its guest line come
+ * from `TIER_COPY` in The Choice, so the two sections cannot disagree about
+ * what a tier is called.
+ *
+ * The three failure messages are in here rather than written at the throw
+ * site, because a German visitor meeting an English apology has been failed
+ * twice. A message the server sends is still shown as the server wrote it:
+ * that is a real error, and inventing a translation for it would hide which
+ * one occurred.
+ */
+type Copy = {
+  title: string;
+  /** R12. No confirmed price for this locale means no button to press. */
+  unpriced: string;
+  begin: (tier: string) => string;
+  pending: string;
+  pledge: string;
+  fineStripe: string;
+  fineEmail: string;
+  sampleNames: string;
+  unreachable: string;
+  notOpened: string;
+};
+
+const COPY: Record<Locale, Copy> = {
+  en: {
+    title: "Begin.",
+    unpriced:
+      "Checkout for this language is not open yet, because its pricing is not confirmed.",
+    begin: (tier) => `Begin ${tier}`,
+    pending: "Opening checkout",
+    pledge: "Priced once, not per guest.",
+    fineStripe: "Payment is handled by Stripe. Card details never reach us.",
+    fineEmail:
+      "Stripe asks for an email address. Your invitation and your editor arrive there.",
+    sampleNames:
+      "Your invitation still carries the sample couple's names. Put yours into the preview above, then begin.",
+    unreachable:
+      "Checkout could not be reached. Check your connection and try again.",
+    notOpened:
+      "Checkout could not be opened. Nothing has been charged. Try again.",
+  },
+  de: {
+    title: "Beginnt.",
+    unpriced:
+      "Der Checkout für diese Sprache ist noch nicht offen, weil die Preise nicht feststehen.",
+    begin: (tier) => `${tier} beginnen`,
+    pending: "Checkout wird geöffnet",
+    pledge: "Einmal pro Hochzeit, nicht pro Gast.",
+    fineStripe:
+      "Die Zahlung wickelt Stripe ab. Eure Kartendaten erreichen uns nie.",
+    fineEmail:
+      "Stripe fragt nach einer E-Mail-Adresse. Eure Einladung und euer Editor kommen dort an.",
+    sampleNames:
+      "Eure Einladung trägt noch die Namen des Beispielpaars. Tragt oben eure eigenen ein und beginnt dann.",
+    unreachable:
+      "Der Checkout war nicht erreichbar. Prüft eure Verbindung und versucht es noch einmal.",
+    notOpened:
+      "Der Checkout ließ sich nicht öffnen. Es wurde nichts abgebucht. Versucht es noch einmal.",
+  },
+};
+
 type Status =
   | { kind: "idle" }
   | { kind: "pending" }
@@ -54,7 +117,8 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
   const inFlight = useRef(false);
 
   const pricing = getPricing(locale);
-  const copy = TIER_COPY[tier];
+  const copy = COPY[locale];
+  const tierCopy = TIER_COPY[locale][tier];
 
   const begin = useCallback(async () => {
     if (inFlight.current) return;
@@ -66,11 +130,7 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
      * wedding. Say so rather than substituting. R3.
      */
     if (isSample) {
-      setStatus({
-        kind: "failed",
-        message:
-          "Your invitation still carries the sample couple's names. Put yours into the preview above, then begin.",
-      });
+      setStatus({ kind: "failed", message: COPY[locale].sampleNames });
       return;
     }
 
@@ -90,10 +150,7 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
     } catch {
       /* Offline, or the request never landed. Nothing was charged. */
       inFlight.current = false;
-      setStatus({
-        kind: "failed",
-        message: "Checkout could not be reached. Check your connection and try again.",
-      });
+      setStatus({ kind: "failed", message: COPY[locale].unreachable });
       return;
     }
 
@@ -102,9 +159,7 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
       inFlight.current = false;
       setStatus({
         kind: "failed",
-        message:
-          readErrorMessage(payload) ??
-          "Checkout could not be opened. Nothing has been charged. Try again.",
+        message: readErrorMessage(payload) ?? COPY[locale].notOpened,
       });
       return;
     }
@@ -122,20 +177,19 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
     <section id="close" className={styles.section} aria-labelledby="close-title">
       <div className={`wrap ${styles.inner}`}>
         <h2 id="close-title" className={`display ${styles.title}`}>
-          Begin.
+          {copy.title}
         </h2>
 
         {pricing === null ? (
           /* Matches The Choice: no confirmed price means no button to press. */
           <p className={styles.notice} role="status">
-            Checkout for this language is not open yet, because its pricing is
-            not confirmed.
+            {copy.unpriced}
           </p>
         ) : (
           <div className={styles.action}>
             <p className={styles.summary}>
-              {copy.name}, {formatPrice(locale, pricing[tier])}.{" "}
-              {copy.guests}
+              {tierCopy.name}, {formatPrice(locale, pricing[tier])}.{" "}
+              {tierCopy.guests}
             </p>
 
             <button
@@ -153,11 +207,11 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
                */
               aria-disabled={pending}
             >
-              {pending ? "Opening checkout" : `Begin ${copy.name}`}
+              {pending ? copy.pending : copy.begin(tierCopy.name)}
             </button>
 
             {/* The line the whole price argument rests on. */}
-            <p className={styles.pledge}>Priced once, not per guest.</p>
+            <p className={styles.pledge}>{copy.pledge}</p>
 
             {status.kind === "failed" ? (
               <p className={styles.error} role="alert">
@@ -165,13 +219,8 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
               </p>
             ) : null}
 
-            <p className={styles.fine}>
-              Payment is handled by Stripe. Card details never reach us.
-            </p>
-            <p className={styles.fine}>
-              Stripe asks for an email address. Your invitation and your editor
-              arrive there.
-            </p>
+            <p className={styles.fine}>{copy.fineStripe}</p>
+            <p className={styles.fine}>{copy.fineEmail}</p>
           </div>
         )}
       </div>

@@ -48,27 +48,44 @@ const STILL_LANDSCAPE = "/tor-poster.jpg";
 
 /**
  * When the 16:9 master plays instead of the 9:16 one. Mirrored in
- * Door.module.css, which lays out the three regimes this splits the world into:
+ * Door.module.css, which lays out the two regimes this splits the world into:
  *
- * A. taller than 3:4        full bleed, portrait master. Every phone held up.
- * B. wider, at least 600px  a centred 9:16 stage on a `--door` ground,
- *    tall                   portrait master. `object-fit: cover` on a 9:16 clip
- *                           at 1280x800 would show the middle ~35% of its
- *                           height and crop the dance floor away, so the gate
- *                           is deliberately not full bleed here
- *                           (docs/opener-film.md section 7). 1080x1920 in a
- *                           ~450px column is also sharper than 1280x720
- *                           stretched across a desktop.
- * C. wider, under 600px     full bleed, landscape master. This is the case the
- *    tall                   second master exists for: a rotated phone, where a
- *                           9:16 column at 390px of height would be a 219px
- *                           splinter of a 844px screen.
+ * A. taller than 3:4  full bleed, portrait master. Every phone held up, which
+ *                     is 90% or more of the traffic, and every tablet held up.
+ * B. wider than 3:4   full bleed, landscape master. A rotated phone, a laptop
+ *                     and a desktop all get the same rule: the door spans the
+ *                     whole viewport.
  *
- * The two height bounds meet at 599.98px so no viewport falls between them.
+ * Both regimes are full bleed, so the only thing this query decides is which
+ * master `object-fit: cover` is allowed to crop, and matching the master's
+ * orientation to the viewport's is what keeps that crop small.
+ *
+ * A centred 9:16 column used to stand where regime B is now, because cropping
+ * the *portrait* master to a landscape box throws the dance floor away
+ * (docs/opener-film.md section 7). Measured at 1440x900: the portrait master
+ * full bleed is a 2.13x blow-up cropped to its middle 47%, while the landscape
+ * master loses 11% of its width and keeps the doors, the light and the floor.
+ * Swapping the master, rather than shrinking the stage, is what let the column
+ * go and the door reach the edges.
  */
-const LANDSCAPE_MEDIA = "(min-aspect-ratio: 3 / 4) and (max-height: 599.98px)";
+const LANDSCAPE_MEDIA = "(min-aspect-ratio: 3 / 4)";
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+/**
+ * The only two words the door says in its own voice.
+ *
+ * The wordmark is the brand and is never translated, which is why it is not in
+ * here. These two are chrome, and a German visitor who has just pressed DE and
+ * is still looking at the word "Open" has been told the switch does nothing.
+ *
+ * "Stile" is the word The Styles already uses for itself, so the link and the
+ * heading it scrolls to agree.
+ */
+const COPY: Record<Locale, { open: string; styles: string }> = {
+  en: { open: "Open", styles: "Styles" },
+  de: { open: "Öffnen", styles: "Stile" },
+};
 
 /** Both masters are 3.4s. Only ever used if the browser will not report it. */
 const FILM_SECONDS = 3.4;
@@ -281,6 +298,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
   if (phase === "gone") return null;
 
   const shut = phase === "closed";
+  const copy = COPY[locale];
 
   return (
     <>
@@ -351,7 +369,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
             <span />
           )}
           <a className={styles.topItem} href="#styles">
-            Styles
+            {copy.styles}
           </a>
         </nav>
 
@@ -374,7 +392,7 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
             <span className={styles.mark}>Always Ever After</span>
             <span className={styles.rule} />
           </span>
-          <span className={styles.label}>Open</span>
+          <span className={styles.label}>{copy.open}</span>
         </button>
 
         <div className={styles.bloom} aria-hidden="true" />
