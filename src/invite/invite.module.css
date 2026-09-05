@@ -1,0 +1,802 @@
+/**
+ * The invitation renderer's entire stylesheet.
+ *
+ * R2: a CSS Module, so nothing here can reach a page that embeds it. There is
+ * no `html`, no `body` and no bare element selector anywhere in this file, and
+ * adding one reintroduces B4.
+ *
+ * R1: no viewport units. Not one. Every size that has to track the frame is
+ * expressed in `cqw`, resolved against `.frame`, which is an inline-size query
+ * container. `cqh` is deliberately unused as well: it would force
+ * `container-type: size`, and size containment collapses a content-height frame
+ * to nothing and stops resolving in print. Anything the renderer genuinely
+ * cannot know, such as how tall a full-page embed should be, arrives as
+ * `--invite-h` from the host, which is the one component that may read the
+ * window.
+ *
+ * Mobile first. Every value below is the 320px value; the wider cases are the
+ * container queries at the bottom.
+ */
+
+/* ============================================================== frame === */
+
+.frame {
+  /* Inline-size, not size. See the note above: this is load bearing. */
+  container-type: inline-size;
+  container-name: invite;
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template: "stage" minmax(0, 1fr) / minmax(0, 1fr);
+  inline-size: 100%;
+  overflow: hidden;
+
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-weight: 300;
+  line-height: 1.6;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* Local tokens. Named apart from the funnel's own so that inheriting into
+     the frame never silently redefines a value the host is relying on. */
+  --inv-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --inv-slow: cubic-bezier(0.7, 0, 0.2, 1);
+  --inv-t: 600ms;
+  --inv-t-slow: 1500ms;
+  /* R9. A tap target never scales with the container; 44px is 44px at 320px. */
+  --inv-tap: 44px;
+}
+
+/* Tells form controls and scrollbars inside a dark theme which way is up. */
+.frame[data-dark="true"] { color-scheme: dark; }
+.frame[data-dark="false"] { color-scheme: light; }
+
+/**
+ * The three sizes.
+ *
+ * `card` and `thumb` are fixed-ratio plates: the host gives a width and the
+ * ratio gives the height. `page` is content-height with a floor the host can
+ * raise through `--invite-h`, because only the host knows how tall a full-page
+ * embed should be, and it is the component allowed to ask the window.
+ */
+.frame[data-fit="page"] { min-block-size: var(--invite-h, 34rem); }
+.frame[data-fit="card"] { aspect-ratio: 3 / 4; }
+.frame[data-fit="thumb"] { aspect-ratio: 3 / 4; }
+
+/* ============================================================ surface === */
+
+/* R6: decorative, and never the pointer target. A 2% seam turning a texture
+   into the drag target is what tripped the gesture in B5. */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.grain[data-surface="grain"] {
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+}
+
+.grain[data-surface="linen"] {
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--rule) 9%, transparent) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--rule) 7%, transparent) 0 1px,
+      transparent 1px 3px
+    );
+}
+
+.grain[data-surface="marble"] {
+  opacity: 0.55;
+  background-image:
+    radial-gradient(120% 70% at 12% 8%, color-mix(in srgb, var(--rule) 16%, transparent) 0%, transparent 55%),
+    radial-gradient(90% 60% at 88% 22%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%),
+    radial-gradient(140% 80% at 40% 92%, color-mix(in srgb, var(--rule) 12%, transparent) 0%, transparent 58%);
+}
+
+/* Troweled lime rather than veined stone: broad soft mottling, no figure, so
+   nothing on the flagship competes with the names. */
+.grain[data-surface="plaster"] {
+  opacity: 0.75;
+  background-image:
+    radial-gradient(130% 55% at 16% 2%, color-mix(in srgb, var(--rule) 22%, transparent) 0%, transparent 60%),
+    radial-gradient(105% 50% at 86% 26%, color-mix(in srgb, var(--rule) 14%, transparent) 0%, transparent 64%),
+    radial-gradient(150% 65% at 44% 98%, color-mix(in srgb, var(--rule) 18%, transparent) 0%, transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)' opacity='.2'/%3E%3C/svg%3E");
+}
+
+.grain[data-surface="none"] { display: none; }
+
+/* ============================================================== stage === */
+
+.scroll {
+  grid-area: stage;
+  z-index: 1;
+  min-block-size: 0;
+  display: grid;
+  align-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+/* A plate does not scroll. Its content is sized to fit it. */
+.frame[data-fit="card"] .scroll,
+.frame[data-fit="thumb"] .scroll { overflow: hidden; }
+
+.sheet {
+  padding: 11cqw 9cqw;
+  /* German compounds are one unbreakable word at 320px without this, and the
+     frame carries `lang`, so the browser hyphenates them properly. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+/* ================================================================ type == */
+
+.kicker {
+  margin: 0;
+  font-family: var(--f-body);
+  font-size: clamp(0.52rem, 2.5cqw, 0.72rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  /* Tracking pushes the optical centre right; the indent pulls it back. */
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.names,
+.coverNames {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 400;
+  line-height: 1.1;
+  text-transform: var(--display-case);
+  letter-spacing: var(--display-track);
+  /* Tracking adds a trailing gap after the last glyph, which pulls a centred
+     line off centre. Reclaim it. Harmless where the track is negative. */
+  margin-inline-end: calc(var(--display-track) * -1);
+  text-wrap: balance;
+}
+
+.names { font-size: clamp(1.5rem, 11cqw, 3.6rem); }
+.coverNames { font-size: clamp(1.6rem, 12.5cqw, 4.2rem); }
+
+.name { color: var(--ink); }
+
+/**
+ * A name the couple has not typed yet announces itself (R12): muted, and ruled
+ * underneath so it reads as a blank to be filled rather than as somebody
+ * actually called "Your name".
+ */
+.name[data-placeholder="true"] {
+  color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
+  background-image: none;
+  border-block-end: 1px dashed var(--rule);
+}
+
+/**
+ * Gilt, on the cover only. The opener is the one hero moment, and letting the
+ * accent metal catch light across the letterforms there is what separates this
+ * from type set in a colour. Themes whose accent is ink set `--gilt-fill` to it,
+ * which paints the glyphs flat and leaves the gradient invisible behind them.
+ *
+ * Guarded, because the fallback for unsupported `background-clip: text` is
+ * `-webkit-text-fill-color: transparent`, which is invisible names.
+ */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .coverNames .name:not([data-placeholder="true"]) {
+    background-image: linear-gradient(
+      100deg,
+      var(--accent) 0%,
+      color-mix(in srgb, var(--accent) 45%, #fff) 45%,
+      var(--accent) 60%,
+      color-mix(in srgb, var(--accent) 70%, #000) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: var(--gilt-fill);
+    color: var(--gilt-fill);
+  }
+}
+
+.amp {
+  display: block;
+  font-family: var(--f-body);
+  font-style: var(--amp-style);
+  font-size: 0.5em;
+  color: var(--accent);
+  letter-spacing: 0;
+  margin-block: 0.16em;
+}
+
+.date,
+.coverDate {
+  margin: 0;
+  font-family: var(--f-body);
+  font-size: clamp(0.54rem, 2.7cqw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--f-body);
+  font-size: clamp(0.5rem, 2.4cqw, 0.68rem);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.today {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: clamp(1rem, 6cqw, 1.6rem);
+  color: var(--accent);
+}
+
+/* ============================================================== rules === */
+
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-block: 5cqw;
+  pointer-events: none;
+}
+
+.rule::before,
+.rule::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  max-inline-size: 20cqw;
+  background: linear-gradient(90deg, transparent, var(--rule));
+}
+
+.rule::after { background: linear-gradient(90deg, var(--rule), transparent); }
+
+.glyph { color: var(--accent); flex: none; }
+
+/* With no glyph there is nothing for two halves to sit either side of, so the
+   rule becomes one uninterrupted hairline instead of a visible gap. */
+.rulePlain {
+  block-size: 1px;
+  inline-size: min(9rem, 34cqw);
+  margin-inline: auto;
+  margin-block: 5cqw;
+  background: var(--rule);
+  pointer-events: none;
+}
+
+/* ========================================================== countdown === */
+
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-inline-size: 22rem;
+  margin-inline: auto;
+  margin-block-start: 8cqw;
+  /* Reserved before the clock is read, so the arrival does not jump a line. */
+  min-block-size: 3.4rem;
+}
+
+.cell {
+  min-inline-size: 0;
+  overflow: hidden;
+  padding: 0.55rem 0.2rem;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.cellNum {
+  display: block;
+  font-family: var(--f-display);
+  font-size: clamp(1rem, 5.5cqw, 1.9rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.cellLabel {
+  display: block;
+  margin-block-start: 0.3rem;
+  font-size: clamp(0.42rem, 2cqw, 0.58rem);
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* ======================================================== open chrome === */
+/**
+ * No boxes, no tiles, no pills: separation is space and hairlines only. Boxes
+ * are what make a page read as a web form rather than as print, so this is the
+ * whole difference between a website and an invitation. Scoped to the
+ * attribute, so the framed themes are untouched by it.
+ */
+.frame[data-chrome="open"] .sheet { padding: 14cqw 11cqw; }
+
+.frame[data-chrome="open"] .kicker {
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+}
+
+.frame[data-chrome="open"] .countdown { gap: 0; }
+
+.frame[data-chrome="open"] .cell {
+  border: 0;
+  background: transparent;
+  padding: 0.1rem 0.35rem;
+}
+
+.frame[data-chrome="open"] .cell + .cell {
+  border-inline-start: 1px solid color-mix(in srgb, var(--rule) 60%, transparent);
+}
+
+.frame[data-chrome="open"] .cellLabel {
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+}
+
+.frame[data-chrome="open"] .btn,
+.frame[data-chrome="open"] .btnGhost {
+  border-radius: 0;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+}
+
+/* ============================================================= reveal === */
+
+.reveal {
+  transition:
+    opacity 700ms var(--inv-ease),
+    transform 700ms var(--inv-ease),
+    filter 700ms var(--inv-ease);
+}
+
+.reveal[data-motion="fade-rise"][data-shown="false"] {
+  opacity: 0;
+  transform: translate3d(0, 4cqw, 0);
+}
+
+.reveal[data-motion="veil"][data-shown="false"] {
+  opacity: 0;
+  transform: scale(1.03);
+  filter: blur(6px);
+}
+
+/* "none" is a theme saying it arrives without ceremony, not a missing value. */
+.reveal[data-motion="none"] { transition: none; }
+
+/* ============================================================ buttons === */
+
+.btn,
+.btnGhost {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* R9. Never smaller, at any container width. */
+  min-block-size: var(--inv-tap);
+  min-inline-size: var(--inv-tap);
+  padding-inline: 1.5rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--f-body);
+  font-size: clamp(0.6rem, 2.6cqw, 0.72rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 180ms var(--inv-ease);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule);
+}
+
+.btn:hover,
+.btnGhost:hover { opacity: 0.9; }
+
+.btn:disabled,
+.btnGhost:disabled { opacity: 0.5; cursor: default; }
+
+.btn:focus-visible,
+.btnGhost:focus-visible,
+.env:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ============================================================= covers === */
+
+.coverLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+.coverInner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 7cqw;
+  background: var(--bg);
+  /* A card is a fixed-ratio plate, so a cover with a scratch panel and a
+     button is the tallest thing the renderer ever composes. It is sized to
+     fit at 320px, and this is the guarantee that a device with larger text
+     still reaches the button rather than having it clipped away. */
+  overflow-y: auto;
+  transition:
+    opacity 900ms var(--inv-ease),
+    transform 900ms var(--inv-ease);
+}
+
+.coverInner[data-leaving="true"] {
+  opacity: 0;
+  transform: scale(1.015);
+  pointer-events: none;
+}
+
+.coverStack {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 4cqw;
+  inline-size: 100%;
+}
+
+/* -------------------------------------------------------------- veil --- */
+
+/**
+ * Two panels of gauze hung over the names. They part and lift together over
+ * 1500ms, which is slower than feels right on the first read and is correct:
+ * the wait is the drama.
+ *
+ * R6: the gauze is decoration over the button, so it must not eat the tap.
+ */
+.gauze {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.gauzePanel {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 54%;
+  background:
+    repeating-linear-gradient(
+      114deg,
+      color-mix(in srgb, var(--surface) 70%, transparent) 0 2px,
+      color-mix(in srgb, var(--surface) 40%, transparent) 2px 5px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 88%, transparent),
+      color-mix(in srgb, var(--surface) 62%, transparent)
+    );
+  transition:
+    transform var(--inv-t-slow) var(--inv-slow),
+    opacity var(--inv-t-slow) var(--inv-slow);
+}
+
+.gauzePanel[data-side="l"] { inset-inline-start: 0; }
+.gauzePanel[data-side="r"] { inset-inline-end: 0; }
+
+.gauze[data-lifted="true"] .gauzePanel[data-side="l"] {
+  transform: translate3d(-64%, -22%, 0) rotate(-3deg);
+  opacity: 0;
+}
+
+.gauze[data-lifted="true"] .gauzePanel[data-side="r"] {
+  transform: translate3d(64%, -22%, 0) rotate(3deg);
+  opacity: 0;
+}
+
+/* -------------------------------------------------------------- foil --- */
+
+.foilWrap {
+  position: relative;
+  inline-size: min(70cqw, 17rem);
+  aspect-ratio: 3 / 2;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+}
+
+.foilUnder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.foilDate {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: clamp(0.8rem, 5cqw, 1.4rem);
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-transform: none;
+}
+
+.foilCanvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  /* Without this, iOS Safari pans the page instead of tracking the finger. */
+  touch-action: none;
+  cursor: crosshair;
+  transition: opacity 500ms var(--inv-ease);
+}
+
+.foilCanvas[data-cleared="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The still used where the panel cannot be scratched. R6: never the target. */
+.foilStill {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    #8a6714 0%,
+    #c9a227 14%,
+    #f6e7a9 28%,
+    #d4af37 42%,
+    #fff6d0 58%,
+    #c08f1e 72%,
+    #ebd37c 86%,
+    #9a7419 100%
+  );
+}
+
+/* ---------------------------------------------------------- envelope --- */
+
+.env {
+  position: relative;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: min(70cqw, 16rem);
+  aspect-ratio: 3 / 2;
+  margin-inline: auto;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  perspective: 900px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.envCard {
+  position: absolute;
+  inset: 18% 8% 10%;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  transform: translateY(12%);
+  opacity: 0;
+  transition:
+    transform var(--inv-t) var(--inv-ease) 150ms,
+    opacity 400ms var(--inv-ease) 150ms;
+}
+
+.env[data-open="true"] .envCard {
+  transform: translateY(-6%);
+  opacity: 1;
+}
+
+.envDate {
+  font-family: var(--f-display);
+  font-size: clamp(0.7rem, 4cqw, 1.15rem);
+  color: var(--ink);
+  letter-spacing: 0.06em;
+}
+
+.envFlap {
+  position: absolute;
+  inset: 0 0 auto 0;
+  block-size: 55%;
+  z-index: 2;
+  background: var(--accent-soft);
+  border-block-end: 1px solid var(--rule);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 700ms var(--inv-ease);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.env[data-open="true"] .envFlap { transform: rotateX(180deg); }
+
+.envSeal {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 3;
+  translate: -50% -50%;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  transition:
+    opacity 300ms var(--inv-ease),
+    transform 500ms var(--inv-ease);
+}
+
+.env[data-open="true"] .envSeal {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+/* ============================================================== fault === */
+
+/**
+ * R3 and R12: an invitation that cannot render says so, loudly, in both
+ * environments. It never falls back to a different date or a different opener.
+ * Deliberately unthemed, because the theme is not what is trustworthy here.
+ */
+.frame[data-fault="true"] {
+  display: block;
+  aspect-ratio: auto;
+  min-block-size: 0;
+  background: #fff4f1;
+}
+
+.fault {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid #c26a58;
+  color: #7a1f1f;
+  font-family: system-ui, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================== the thumb == */
+/**
+ * A 150px tile. Everything is set from the same tokens, only smaller, so a
+ * thumbnail is a small invitation rather than a different design.
+ */
+.frame[data-fit="thumb"] .sheet { padding: 9cqw 8cqw; }
+.frame[data-fit="thumb"] .names { font-size: clamp(0.82rem, 11cqw, 1.5rem); }
+.frame[data-fit="thumb"] .coverNames { font-size: clamp(0.86rem, 12cqw, 1.6rem); }
+.frame[data-fit="thumb"] .kicker {
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+}
+.frame[data-fit="thumb"] .date,
+.frame[data-fit="thumb"] .coverDate,
+.frame[data-fit="thumb"] .hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+}
+.frame[data-fit="thumb"] .foilWrap,
+.frame[data-fit="thumb"] .env { inline-size: min(72cqw, 9rem); }
+.frame[data-fit="thumb"] .envSeal { inline-size: 1.4rem; block-size: 1.4rem; }
+
+/* ================================================== wider containers ==== */
+/* Desktop is the media query, and here it is the container query: the frame
+   may be 640px wide inside a 390px phone laid out as a grid, so the question
+   that matters is how wide the frame is, never how wide the window is. */
+
+@container invite (min-width: 30rem) {
+  .sheet { padding: 8cqw 7cqw; }
+  .countdown { gap: 0.9rem; }
+  .cell { padding: 0.8rem 0.4rem; }
+}
+
+@container invite (min-width: 44rem) {
+  .sheet { padding: 6cqw 6cqw; }
+  .rule { margin-block: 3cqw; }
+  .rulePlain { margin-block: 3cqw; }
+}
+
+/* ================================================== reduced motion ====== */
+/**
+ * The arrived state, with no animation. The film is replaced by its poster
+ * frame: openers still hand over, they just do it without moving.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .coverInner,
+  .gauzePanel,
+  .foilCanvas,
+  .envCard,
+  .envFlap,
+  .envSeal,
+  .btn,
+  .btnGhost {
+    transition: none;
+  }
+
+  .reveal[data-motion="fade-rise"][data-shown="false"],
+  .reveal[data-motion="veil"][data-shown="false"] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ============================================================== print === */
+/**
+ * R10: every variant, not just the one somebody remembered. `page`, `card` and
+ * `thumb` all drop their fixed geometry, and the cover is removed from all four
+ * openers, because printing before opening is exactly how B3 produced an 844px
+ * near-blank sheet.
+ */
+@media print {
+  .frame[data-fit="page"],
+  .frame[data-fit="card"],
+  .frame[data-fit="thumb"] {
+    aspect-ratio: auto;
+    min-block-size: 0;
+    overflow: visible;
+    background: none;
+  }
+
+  .scroll { overflow: visible; }
+  .grain { display: none; }
+  .coverLayer { display: none; }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
