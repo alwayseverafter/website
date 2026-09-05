@@ -1,0 +1,350 @@
+/**
+ * 0. The Door. R2: a CSS Module, so none of this can reach any other section.
+ *
+ * Mobile first. Everything outside a media query is the phone rule.
+ *
+ * `dvh` is used deliberately. The R1 ban on viewport units covers `src/invite/**`
+ * only, because the renderer is embedded in a page at three sizes and reading
+ * the window is what made petals travel 1.58x their frame. The door is chrome:
+ * it *is* the window, and `100vh` would be cropped by the iOS URL bar.
+ */
+
+.root {
+  position: relative;
+  isolation: isolate;
+  height: 100vh; /* floor for anything without dvh */
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--door);
+  color: var(--paper);
+}
+
+/* ── the film ───────────────────────────────────────────────────────── */
+
+/*
+ * Regimes A and C: full bleed. The still and the film share one grid cell so
+ * they are laid out identically, which is the whole frame 0 rule expressed in
+ * CSS. If these two ever disagree about size or object-fit, the tap flashes.
+ */
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  grid-template: 1fr / 1fr;
+  background: var(--door);
+}
+
+/* `<picture>` is only a wrapper for the media query. The `<img>` is the item. */
+.stillBox {
+  display: contents;
+}
+
+.still,
+.film {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: var(--door);
+  /* R6. Neither of these may ever become the pointer target. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * Regime B: wider than 3:4 and at least 600px tall, so a desktop or a laptop.
+ * A centred 9:16 stage rather than full bleed, because `object-fit: cover` on
+ * the portrait master at 1280x800 crops it to the middle ~35% of its height and
+ * throws the dance floor away. See docs/opener-film.md section 7. The bound
+ * mirrors LANDSCAPE_MEDIA in Door.tsx, which owns the complement.
+ */
+@media (min-aspect-ratio: 3 / 4) and (min-height: 600px) {
+  .stage {
+    place-items: center;
+  }
+
+  .still,
+  .film {
+    width: auto;
+    height: 100%;
+    aspect-ratio: 9 / 16;
+  }
+}
+
+/*
+ * Legibility for the wordmark and the word, and nothing more. Sits over the
+ * whole viewport rather than over the stage, so it still covers the ground on
+ * either side of the centred column in regime B.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(11, 12, 14, 0.62) 0%, rgba(11, 12, 14, 0) 26%),
+    linear-gradient(to top, rgba(11, 12, 14, 0.7) 0%, rgba(11, 12, 14, 0) 44%);
+}
+
+/* ── the hairline row ───────────────────────────────────────────────── */
+
+.top {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: calc(var(--gut) - 0.4rem);
+  padding-top: env(safe-area-inset-top, 0px);
+  /* One rule weight. It reads as a hairline on the door rather than on paper. */
+  border-bottom: 1px solid rgba(250, 248, 245, 0.16);
+  transition: opacity var(--t);
+}
+
+.locales {
+  display: flex;
+  align-items: center;
+}
+
+.topItem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* R9. 44x44 at 320px, on both axes, for a two letter label. */
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--t);
+}
+
+.topItem:hover,
+.topItem[aria-pressed="true"] {
+  color: var(--paper);
+}
+
+.slash {
+  color: var(--ink-3);
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+/* ── the one word ───────────────────────────────────────────────────── */
+
+.trigger {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2.25rem, 20dvh, 8rem);
+  width: 100%;
+  padding: calc(var(--tap) + 1.5rem) var(--gut)
+    max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 2rem));
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--t);
+}
+
+/* R6. The wordmark and the rule are decoration inside the tap target. */
+.markBlock,
+.mark,
+.rule {
+  pointer-events: none;
+}
+
+.markBlock {
+  display: block;
+}
+
+.mark {
+  display: block;
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: clamp(0.78rem, 3.6vw, 1.1rem);
+  line-height: 1.5;
+  text-transform: uppercase;
+  /* Tracking pushes the optical centre right; the indent pulls it back. */
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--paper);
+}
+
+.rule {
+  display: block;
+  width: clamp(2.25rem, 11vw, 4rem);
+  height: 1px;
+  margin: 1.1rem auto 0;
+  background: currentColor;
+  opacity: 0.42;
+}
+
+/*
+ * No border, no pill, no box. Rule 1 of the house: separation is space and
+ * hairlines, and a bordered rectangle is what makes a page read as a web form.
+ * The tap target is the whole viewport; the padding here only guarantees the
+ * word itself clears 44x44 for anyone aiming at it.
+ */
+.label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0.85rem 1.5rem 1rem;
+  font-family: var(--f-ui);
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--paper);
+  transition: transform var(--t);
+}
+
+.label::after {
+  content: "";
+  position: absolute;
+  right: 1.5rem;
+  bottom: 0.7rem;
+  left: 1.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.45;
+  transition: opacity var(--t);
+}
+
+.trigger:hover .label::after,
+.trigger[data-pressed] .label::after {
+  opacity: 1;
+}
+
+.trigger[data-pressed] .label {
+  transform: translateY(1px);
+}
+
+/* The ring belongs on the word, not on a button the size of the screen. */
+.trigger:focus-visible {
+  outline: none;
+}
+
+.trigger:focus-visible .label {
+  outline: 2px solid var(--paper);
+  outline-offset: 6px;
+}
+
+/* ── opening ────────────────────────────────────────────────────────── */
+
+.root[data-phase="opening"] .top,
+.root[data-phase="blooming"] .top,
+.root[data-phase="opening"] .trigger,
+.root[data-phase="blooming"] .trigger {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * The bloom to white over the last frames. It is why the clip does not have to
+ * end on white, and it is what the handover to section 1 hides behind.
+ */
+.bloom {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms linear;
+}
+
+/* R8. Opt in for the two phases that animate it, never standing. */
+.root[data-phase="opening"] .bloom,
+.root[data-phase="blooming"] .bloom {
+  will-change: opacity;
+}
+
+.root[data-phase="blooming"] .bloom {
+  opacity: 1;
+}
+
+/*
+ * Mounted opaque at the instant the door leaves the flow, so the collapse and
+ * the scroll reset happen behind it, then dissolved off the invitation. Fixed,
+ * and a sibling of the door rather than a child, so nothing can clip it.
+ */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--paper);
+  pointer-events: none;
+  animation: veilOut 700ms var(--ease) forwards;
+}
+
+@keyframes veilOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ── reduced motion ─────────────────────────────────────────────────── */
+
+/*
+ * The film is skipped in Door.tsx and the arrived state is rendered directly.
+ * This is the belt and braces for anything that would still move.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .top,
+  .trigger,
+  .label,
+  .label::after,
+  .bloom {
+    transition: none;
+  }
+
+  .veil {
+    animation-duration: 1ms;
+  }
+}
+
+/* ── print ──────────────────────────────────────────────────────────── */
+
+/*
+ * R10 covers every variant. One selector on the root does that here: the door
+ * is chrome, and no phase of it belongs on paper. Printing it would otherwise
+ * put a solid black sheet in front of the invitation.
+ */
+@media print {
+  .root,
+  .veil {
+    display: none;
+  }
+}
