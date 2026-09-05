@@ -1,0 +1,211 @@
+/*
+ * The Styles gallery.
+ *
+ * R2: a CSS Module, and not one selector here touches html, body or a bare
+ * element. Everything anchors on a hashed class.
+ *
+ * R9: designed at 320 px. Every rule below is the phone rule; the media queries
+ * only ever add. No interactive element in this file drops below 44 px at any
+ * width, and nothing is hidden to make something fit.
+ */
+
+.page {
+  padding-block: 1.5rem 4rem;
+}
+
+/* ── masthead ───────────────────────────────────────────────────────── */
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/*
+ * The wordmark is the path back into the funnel and it is present before
+ * anything else on the page. These pages feed the funnel; they are not a
+ * destination.
+ */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-family: var(--f-display);
+  /* 0.8rem at 320 px. Tracking is expensive in pixels and the wordmark must fit. */
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  /* Tracking pushes the optical centre right. Indent pulls it back. */
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.wordmark:hover {
+  color: var(--ink-2);
+}
+
+@media (min-width: 30rem) {
+  .wordmark {
+    font-size: 0.95rem;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+  }
+}
+
+.rule {
+  border: 0;
+  border-top: var(--hair);
+  margin: 1.25rem 0 2.5rem;
+}
+
+/* ── intro ──────────────────────────────────────────────────────────── */
+
+.intro {
+  max-width: 40rem;
+}
+
+.h1 {
+  font-size: clamp(2.25rem, 12vw, 4.5rem);
+  margin-block: 0.75rem 1.25rem;
+}
+
+.count {
+  margin-top: 1.5rem;
+  font-family: var(--f-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── the grid ───────────────────────────────────────────────────────── */
+
+.grid {
+  list-style: none;
+  margin: 3rem 0 0;
+  padding: 0;
+  display: grid;
+  /*
+   * One column at 320 px. A two up grid there would put each invitation under
+   * 140 px wide, which is a swatch rather than a sample, and the sample is the
+   * entire argument of the page.
+   */
+  grid-template-columns: 1fr;
+  gap: 3rem 1.5rem;
+}
+
+@media (min-width: 30rem) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 60rem) {
+  .grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/*
+ * The one permitted box in the whole brand, because it is a picture frame.
+ * The lift is the only shadow that exists on this site.
+ */
+.frame {
+  display: block;
+  box-shadow: var(--lift);
+  transition: transform var(--t);
+}
+
+.card:hover .frame {
+  transform: translateY(-3px);
+}
+
+.cardName {
+  display: block;
+  font-family: var(--f-display);
+  font-size: 1.4rem;
+  line-height: 1.1;
+  font-weight: 400;
+  margin: 1rem 0 0.4rem;
+}
+
+.cardLine {
+  display: block;
+  font-family: var(--f-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.cardMeta {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: var(--f-ui);
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── the way back in ────────────────────────────────────────────────── */
+
+.close {
+  max-width: 40rem;
+}
+
+.h2 {
+  font-size: clamp(1.75rem, 8vw, 2.75rem);
+  margin-block: 0 1rem;
+}
+
+/*
+ * Not a button. A rule under a line of type, which is what a link looks like
+ * in print, and the tap target is the full 44 px regardless.
+ */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: 1.75rem;
+  padding-block: 0.25rem;
+  font-family: var(--f-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: var(--hair);
+  border-bottom-color: var(--ink);
+  transition: color var(--t), border-color var(--t);
+}
+
+.cta:hover {
+  color: var(--ink-2);
+  border-bottom-color: var(--ink-3);
+}
+
+.fine {
+  margin: 1rem 0 0;
+  font-family: var(--f-body);
+  font-size: 1rem;
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .cta {
+    transition: none;
+  }
+
+  .card:hover .frame {
+    transform: none;
+  }
+}
