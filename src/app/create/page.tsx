@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mark } from "@/components/Mark";
+import { deliveryConfigured } from "@/lib/delivery";
 import { inviteUrl, readProvisioned } from "@/lib/provision";
 import styles from "./Create.module.css";
 
@@ -46,6 +47,10 @@ export default async function Create(
 
   const result = await readProvisioned(session);
 
+  /* Whether this deployment can send mail at all. Read here, on the server,
+     because it is this site's own configuration and nothing else knows it. */
+  const emailPossible = deliveryConfigured();
+
   if (result.ok) {
     const guestUrl = inviteUrl(result.invite.slug);
     const names = [result.invite.partnerAName, result.invite.partnerBName]
@@ -65,11 +70,12 @@ export default async function Create(
           </a>
         ) : (
           /* R3. The link could not be minted, so say that, rather than
-             rendering a button that goes nowhere. */
+             rendering a button that goes nowhere. Note what it does not say:
+             that the link is in an email. This page cannot know that. */
           <p className={styles.notice} role="status">
             Your invitation was created, but the link into your editor could not
-            be made just now. It is in the email we sent you. If it has not
-            arrived within a few minutes, write to us with the reference below.
+            be made just now. Write to us with the reference below and we will
+            send you one.
           </p>
         )}
 
@@ -81,14 +87,28 @@ export default async function Create(
           </p>
         ) : null}
 
+        {/*
+          Said only when this site can actually send mail.
+          
+          It used to be unconditional, and RESEND_API_KEY ships empty, so on a
+          first deploy every buyer was told their links were in an email that
+          was never sent. A page cannot promise something another system did.
+        */}
         <p className={styles.fine}>
-          These links are in your email as well. This tab is not the only copy.
+          {emailPossible
+            ? "We have also emailed these links to you. If nothing arrives within a few minutes, keep this page."
+            : "Keep this page, or copy the links above. They are the only copy."}
         </p>
       </Shell>
     );
   }
 
-  if (result.reason === "not_provisioned") {
+  /*
+   * "unavailable" is the product having a moment, and the webhook is very
+   * likely still in flight. Telling a buyer their purchase broke because one
+   * read returned a 503 is a false alarm delivered at the worst moment.
+   */
+  if (result.reason === "not_provisioned" || result.reason === "unavailable") {
     return (
       <Shell title="Your payment went through.">
         <p className={styles.body}>

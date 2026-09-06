@@ -30,6 +30,14 @@ export type Provisioned = {
   slug: string;
   /** May be "" when the product could not mint a magic link. Never faked. */
   editorUrl: string;
+  /**
+   * True only on the delivery that actually created the invitation.
+   *
+   * Provisioning is idempotent; sending an email is not. Stripe delivers at
+   * least once, retries every 5xx, and replays events from the dashboard by
+   * hand, so without this a couple receives the same email twice.
+   */
+  created?: boolean;
   partnerAName?: string;
   partnerBName?: string;
   weddingDate?: string | null;
@@ -39,6 +47,13 @@ export type ProvisionResult =
   | { ok: true; invite: Provisioned }
   /** The payment is real and no invitation exists for it yet. */
   | { ok: false; reason: "not_provisioned" }
+  /**
+   * The product is reachable but not answering right now: a 5xx, or the
+   * request never landed. Distinct from "failed" because the webhook is very
+   * likely still in flight and about to succeed, so a buyer must be shown
+   * "being prepared" rather than told their purchase broke.
+   */
+  | { ok: false; reason: "unavailable"; detail: string }
   | { ok: false; reason: "not_configured"; missing: string[] }
   | { ok: false; reason: "failed"; detail: string };
 
@@ -80,7 +95,7 @@ export async function provision(input: ProvisionInput): Promise<ProvisionResult>
       cache: "no-store",
     });
   } catch (e) {
-    return { ok: false, reason: "failed", detail: e instanceof Error ? e.message : "network" };
+    return { ok: false, reason: "unavailable", detail: e instanceof Error ? e.message : "network" };
   }
 
   const body: unknown = await res.json().catch(() => null);
@@ -88,7 +103,11 @@ export async function provision(input: ProvisionInput): Promise<ProvisionResult>
     const detail = typeof (body as { error?: unknown })?.error === "string"
       ? String((body as { error: string }).error)
       : `http_${res.status}`;
-    return { ok: false, reason: "failed", detail };
+    /* A 5xx is the product having a moment. A 4xx is this request being wrong,
+       and no amount of retrying will change it. */
+    return res.status >= 500
+      ? { ok: false, reason: "unavailable", detail }
+      : { ok: false, reason: "failed", detail };
   }
   if (!isProvisioned(body)) {
     return { ok: false, reason: "failed", detail: "malformed_response" };
@@ -115,14 +134,24 @@ export async function readProvisioned(stripeSessionId: string): Promise<Provisio
       cache: "no-store",
     });
   } catch (e) {
-    return { ok: false, reason: "failed", detail: e instanceof Error ? e.message : "network" };
+    return { ok: false, reason: "unavailable", detail: e instanceof Error ? e.message : "network" };
   }
 
+  /* Not created yet. The webhook may still be in flight; this is not an error. */
   if (res.status === 404) return { ok: false, reason: "not_provisioned" };
 
   const body: unknown = await res.json().catch(() => null);
-  if (!res.ok || !isProvisioned(body)) {
-    return { ok: false, reason: "failed", detail: `http_${res.status}` };
+
+  if (!res.ok) {
+    return res.status >= 500
+      ? { ok: false, reason: "unavailable", detail: `http_${res.status}` }
+      : { ok: false, reason: "failed", detail: `http_${res.status}` };
+  }
+  if (!isProvisioned(body)) {
+    /* A 200 carrying something else. Reporting this as "http_200" put the
+       string "The product could not be reached (http_200)" in front of a
+       paying customer, which is both wrong and unreadable. */
+    return { ok: false, reason: "failed", detail: "malformed_response" };
   }
   return { ok: true, invite: body };
 }

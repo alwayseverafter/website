@@ -54,3 +54,58 @@ describe("productOrigin", () => {
     expect(productOrigin()).toBeNull();
   });
 });
+
+describe("readProvisioned, transient versus real failure", () => {
+  const realFetch = global.fetch;
+  afterEach(() => { global.fetch = realFetch; });
+
+  function configured() {
+    process.env.DAVET_PROVISION_URL = "https://product.example/api/provision";
+    process.env.DAVET_PROVISION_SECRET = "s";
+  }
+
+  function respond(status: number, body: unknown = {}) {
+    global.fetch = (async () =>
+      new Response(JSON.stringify(body), {
+        status, headers: { "content-type": "application/json" },
+      })) as typeof fetch;
+  }
+
+  it("reads a 404 as not provisioned yet, not as an error", async () => {
+    // The webhook can land after the redirect does, so this is the ordinary
+    // case for a buyer who is quick, and it must render "being prepared".
+    configured(); respond(404);
+    const { readProvisioned } = await import("./provision");
+    expect(await readProvisioned("cs_1")).toEqual({ ok: false, reason: "not_provisioned" });
+  });
+
+  it("reads a 503 as transient, so a buyer is not told their purchase broke", async () => {
+    configured(); respond(503);
+    const { readProvisioned } = await import("./provision");
+    const result = await readProvisioned("cs_1");
+    expect(result).toMatchObject({ ok: false, reason: "unavailable" });
+  });
+
+  it("reads a network failure as transient", async () => {
+    configured();
+    global.fetch = (async () => { throw new Error("ECONNRESET"); }) as typeof fetch;
+    const { readProvisioned } = await import("./provision");
+    expect(await readProvisioned("cs_1")).toMatchObject({ ok: false, reason: "unavailable" });
+  });
+
+  it("reads a 400 as a real failure, because retrying will not fix it", async () => {
+    configured(); respond(400);
+    const { readProvisioned } = await import("./provision");
+    expect(await readProvisioned("cs_1")).toMatchObject({ ok: false, reason: "failed" });
+  });
+
+  it("does not tell a customer the product was unreachable on a 200", async () => {
+    // This produced "The product could not be reached (http_200)", which is
+    // both untrue and unreadable.
+    configured(); respond(200, { nonsense: true });
+    const { readProvisioned } = await import("./provision");
+    expect(await readProvisioned("cs_1")).toMatchObject({
+      ok: false, reason: "failed", detail: "malformed_response",
+    });
+  });
+});

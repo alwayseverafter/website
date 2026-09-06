@@ -121,6 +121,20 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "provision_failed" }, { status: 500 });
   }
 
+  /*
+   * Only the delivery that created the invitation sends the email.
+   *
+   * Stripe delivers at least once, retries every 5xx this route returns, and
+   * replays events from the dashboard by hand. Provisioning absorbs all of
+   * that because it is idempotent on the session id; sending is not, so
+   * without this gate a couple receives the same email two or three times.
+   */
+  if (result.invite.created === false) {
+    return NextResponse.json({
+      received: true, inviteId: result.invite.inviteId, emailed: false,
+    });
+  }
+
   /* The invitation is served by the product, not by this site. */
   const guestUrl = inviteUrl(result.invite.slug);
   const email = await sendInvitationEmail({
