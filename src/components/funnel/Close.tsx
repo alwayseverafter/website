@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { Locale } from "@/invite/types";
+import { isSellableTheme, type Locale } from "@/invite/types";
 import { track } from "@/lib/analytics";
 import { useCouple } from "@/lib/couple";
 import { formatPrice, getPricing, TIER_COPY, useSelectedTier } from "./Choice";
@@ -41,6 +41,8 @@ type Copy = {
   fineStripe: string;
   fineEmail: string;
   sampleNames: string;
+  /** R3. A style they chose weeks ago that we no longer build. */
+  unavailableStyle: string;
   unreachable: string;
   notOpened: string;
 };
@@ -58,6 +60,8 @@ const COPY: Record<Locale, Copy> = {
       "Stripe asks for an email address. Your invitation and your editor arrive there.",
     sampleNames:
       "Your invitation still carries the sample couple's names. Put yours into the preview above, then begin.",
+    unavailableStyle:
+      "The style saved on this device is not one we are building at the moment. Choose a style in the gallery, then begin.",
     unreachable:
       "Checkout could not be reached. Check your connection and try again.",
     notOpened:
@@ -76,6 +80,8 @@ const COPY: Record<Locale, Copy> = {
       "Stripe fragt nach einer E-Mail-Adresse. Eure Einladung und euer Editor kommen dort an.",
     sampleNames:
       "Eure Einladung trägt noch die Namen des Beispielpaars. Tragt oben eure eigenen ein und beginnt dann.",
+    unavailableStyle:
+      "Der auf diesem Gerät gespeicherte Stil gehört nicht zu denen, die wir gerade bauen. Wählt einen Stil in der Galerie und beginnt dann.",
     unreachable:
       "Der Checkout war nicht erreichbar. Prüft eure Verbindung und versucht es noch einmal.",
     notOpened:
@@ -131,6 +137,17 @@ export function Close({ locale = "en" }: { locale?: Locale }) {
      */
     if (isSample) {
       setStatus({ kind: "failed", message: COPY[locale].sampleNames });
+      return;
+    }
+
+    /*
+     * A theme this device stored before the sellable list narrowed. The
+     * request would be refused by `/api/checkout` with a message about names
+     * and dates, which is true of the wrong field. Say which thing is wrong,
+     * here, rather than sending them to a generic rejection. R3.
+     */
+    if (!isSellableTheme(couple.theme)) {
+      setStatus({ kind: "failed", message: COPY[locale].unavailableStyle });
       return;
     }
 

@@ -18,6 +18,8 @@ export type FunnelEvent =
   | { name: "mirror_named" }
   | { name: "style_selected"; theme: string }
   | { name: "tiers_viewed" }
+  /* The opt in under The Mirror. Named, then chose to be written to. */
+  | { name: "lead_captured" }
   | { name: "checkout_started"; tier: Tier }
   | { name: "purchase"; tier: Tier; amount: number }
   | { name: "commission_enquiry" };

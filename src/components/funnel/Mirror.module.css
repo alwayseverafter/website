@@ -270,3 +270,137 @@
     gap: 2rem;
   }
 }
+
+/* ── the opt in ──────────────────────────────────────────────────────────
+ *
+ * Below the fields and below the status line, separated by a single hairline
+ * and space. No box, no tint, no panel: this is an offer, not an alert, and a
+ * bordered card here would read as the newsletter modal the whole page exists
+ * in order not to be.
+ *
+ * Mobile first. The row stacks at 320 px and sits on one line once there is
+ * room for a 44 px button beside a usable field. R9.
+ */
+
+.lead {
+  border-top: var(--hair);
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+}
+
+.offer {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 40ch;
+  margin: 0 0 1rem;
+}
+
+.leadRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.leadButton {
+  min-height: var(--tap);
+  padding-inline: 1.5rem;
+  border: var(--hair);
+  border-color: var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--f-ui);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--t), border-color var(--t);
+}
+
+.leadButton:hover {
+  color: var(--ink-2);
+  border-color: var(--ink-2);
+}
+
+/*
+ * The label wraps the checkbox, so the whole line is the tap target. That is
+ * what carries this past 44 px without drawing a 44 px box around a 16 px box.
+ */
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-height: var(--tap);
+  margin-top: 0.9rem;
+  font-family: var(--f-ui);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.check {
+  /* Overrides the global 44 px minimum on inputs, which would draw an enormous
+     box here. The 44 px target is the label this sits inside. */
+  min-height: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.15rem;
+  accent-color: var(--ink);
+  flex: none;
+}
+
+.privacy {
+  color: var(--ink-2);
+  text-underline-offset: 0.2em;
+}
+
+.privacy:hover {
+  color: var(--ink);
+}
+
+.leadDone,
+.leadError {
+  font-family: var(--f-ui);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 0.9rem 0 0;
+}
+
+.leadDone { color: var(--ink-2); }
+.leadError { color: var(--ink); }
+
+/*
+ * Off screen rather than display:none. A bot reading the DOM sees display:none
+ * and skips the trap, which is the one thing it must not do.
+ */
+.trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 30rem) {
+  .leadRow {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .leadRow .input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .leadButton { flex: none; }
+}

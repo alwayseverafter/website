@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!--
+    The favicon. Geometry matches src/components/Mark.tsx.
+    Ink on paper, not transparent: a browser tab and a bookmark bar are both
+    light and dark, and a transparent mark disappears into one of them.
+  -->
+  <rect width="64" height="64" fill="#faf8f5"/>
+  <g fill="none" stroke="#131a26" stroke-width="2" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M13 58V34C13 20 21 11 32 6c11 5 19 14 19 28v24"/>
+    <path d="M13 43h38"/>
+  </g>
+</svg>

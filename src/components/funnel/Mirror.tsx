@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { InvitePreview } from "@/invite/InvitePreview";
 import type { Couple, Locale } from "@/invite/types";
 import { SAMPLE, useCouple } from "@/lib/couple";
@@ -10,10 +10,16 @@ import styles from "./Mirror.module.css";
 /**
  * Section 3: The Mirror. The conversion engine.
  *
- * Two names and a date, and the invitation becomes theirs. There is no account,
- * no email field and no wall, because the wall is precisely where every
- * competitor's funnel leaks. `mirror_named` is the event the whole design is a
- * bet on, and the site's primary metric is named to purchase.
+ * Two names and a date, and the invitation becomes theirs. There is no account
+ * and no wall, because the wall is precisely where every competitor's funnel
+ * leaks. `mirror_named` is the event the whole design is a bet on, and the
+ * site's primary metric is named to purchase.
+ *
+ * There is now an email field, and it is not a wall. It renders only after the
+ * invitation already carries their names, it gates nothing, and skipping it
+ * costs a visitor nothing at all. That ordering is the whole point: the bet is
+ * that naming predicts buying, so nothing may stand between naming and the
+ * preview. Asking afterwards is free.
  *
  * A live preview sits inside this section rather than only above it. The
  * invitation in The Arrival re-renders too, from the same store, but on a phone
@@ -37,12 +43,22 @@ type Copy = {
   /** Coarse, low-cardinality text for the polite live region. */
   liveOwn: string;
   liveSample: string;
+  /* The opt in. Appears only once the invitation is actually theirs. */
+  offer: string;
+  emailLabel: string;
+  consent: string;
+  privacyWord: string;
+  send: string;
+  sending: string;
+  sent: string;
+  needConsent: string;
+  failed: string;
 };
 
 const COPY: Record<Locale, Copy> = {
   en: {
     heading: "Your names. Your date.",
-    lede: "Type them in. The invitation becomes yours as you go. No account, no email address.",
+    lede: "Type them in. The invitation becomes yours as you go. No account, and nothing here is held back.",
     nameA: "One name",
     nameB: "The other name",
     date: "The date",
@@ -50,10 +66,19 @@ const COPY: Record<Locale, Copy> = {
     sampleNote: "Those are the sample values, until you type your own.",
     liveOwn: "The invitation now carries your names.",
     liveSample: "The invitation is showing the sample couple.",
+    offer: "Want this preview sent to you? We will write once, and once more if you have not decided.",
+    emailLabel: "Your email address, if you want it",
+    consent: "Yes, write to me about this.",
+    privacyWord: "What we store",
+    send: "Send it to me",
+    sending: "Sending",
+    sent: "Sent. Check your inbox in a minute.",
+    needConsent: "Tick the box and we will send it. Without it we may not write to you.",
+    failed: "That did not save. Nothing was sent. Try again in a moment.",
   },
   de: {
     heading: "Eure Namen. Euer Datum.",
-    lede: "Tragt sie ein. Die Einladung wird beim Tippen zu eurer. Kein Konto, keine E-Mail-Adresse.",
+    lede: "Tragt sie ein. Die Einladung wird beim Tippen zu eurer. Kein Konto, und nichts wird hier zurückgehalten.",
     nameA: "Ein Name",
     nameB: "Der andere Name",
     date: "Das Datum",
@@ -61,8 +86,32 @@ const COPY: Record<Locale, Copy> = {
     sampleNote: "Das sind die Beispielwerte, bis ihr eigene eintragt.",
     liveOwn: "Die Einladung trägt jetzt eure Namen.",
     liveSample: "Die Einladung zeigt das Beispielpaar.",
+    offer: "Sollen wir euch diese Vorschau schicken? Wir schreiben einmal, und noch einmal, falls ihr euch nicht entschieden habt.",
+    emailLabel: "Eure E-Mail-Adresse, wenn ihr möchtet",
+    consent: "Ja, schreibt mir dazu.",
+    privacyWord: "Was wir speichern",
+    send: "Schickt sie mir",
+    sending: "Wird gesendet",
+    sent: "Gesendet. Schaut in einer Minute ins Postfach.",
+    needConsent: "Setzt das Häkchen, dann schicken wir sie. Ohne dürfen wir euch nicht schreiben.",
+    failed: "Das wurde nicht gespeichert. Es wurde nichts gesendet. Versucht es gleich noch einmal.",
   },
 };
+
+type LeadStatus =
+  | { kind: "idle" }
+  | { kind: "pending" }
+  | { kind: "done" }
+  | { kind: "failed"; message: string };
+
+/** The response body is a network boundary, so it is read defensively. */
+function readLeadError(payload: unknown): string | null {
+  if (typeof payload !== "object" || payload === null) return null;
+  const error = (payload as { error?: unknown }).error;
+  if (typeof error !== "object" || error === null) return null;
+  const message = (error as { message?: unknown }).message;
+  return typeof message === "string" && message.length > 0 ? message : null;
+}
 
 function formatDate(iso: string, locale: Locale): string {
   /* Midday UTC, formatted in UTC. A calendar date is not an instant, and
@@ -96,6 +145,13 @@ export function Mirror({ locale = "en" }: { locale?: Locale }) {
    */
   const [dateDraft, setDateDraft] = useState(couple.date);
   const [dateSynced, setDateSynced] = useState(couple.date);
+
+  /* The opt in. Everything below gates nothing above it. */
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [trap, setTrap] = useState("");
+  const [lead, setLead] = useState<LeadStatus>({ kind: "idle" });
+  const leadInFlight = useRef(false);
   if (couple.date !== dateSynced) {
     setDateSynced(couple.date);
     setDateDraft(couple.date);
@@ -131,6 +187,58 @@ export function Mirror({ locale = "en" }: { locale?: Locale }) {
     /* Only a complete date reaches storage. See the draft note above. */
     if (ISO_DATE.test(value)) update({ date: value });
   }
+
+  const submitLead = useCallback(async () => {
+    /* R4. The handler reads this in the tick it is set, so a render closure
+       would still be holding the previous value. */
+    if (leadInFlight.current) return;
+
+    if (!consent) {
+      setLead({ kind: "failed", message: COPY[locale].needConsent });
+      return;
+    }
+
+    leadInFlight.current = true;
+    setLead({ kind: "pending" });
+
+    let ok = false;
+    let payload: unknown = null;
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          partnerA: typedA,
+          partnerB: typedB,
+          weddingDate: dateComplete ? dateDraft : null,
+          theme: couple.theme,
+          locale,
+          consent: true,
+          trap,
+        }),
+      });
+      ok = res.ok;
+      payload = await res.json().catch(() => null);
+    } catch {
+      leadInFlight.current = false;
+      setLead({ kind: "failed", message: COPY[locale].failed });
+      return;
+    }
+
+    leadInFlight.current = false;
+
+    if (!ok) {
+      /* A message the server wrote is shown as the server wrote it: it names
+         which thing broke, and inventing a translation would hide that. R3. */
+      const message = readLeadError(payload) ?? COPY[locale].failed;
+      setLead({ kind: "failed", message });
+      return;
+    }
+
+    track({ name: "lead_captured" }, true);
+    setLead({ kind: "done" });
+  }, [consent, couple.theme, dateComplete, dateDraft, email, locale, trap, typedA, typedB]);
 
   return (
     <section id="mirror" className={styles.mirror} aria-labelledby={`${id}-h`}>
@@ -236,6 +344,96 @@ export function Mirror({ locale = "en" }: { locale?: Locale }) {
             {usingSample ? copy.liveSample : copy.liveOwn}
           </p>
         </form>
+
+        {/*
+          The opt in.
+
+          A second <form>, not a fieldset inside the first: nesting forms is
+          invalid HTML and a phone would offer the wrong keyboard action. It
+          renders only once the invitation is genuinely theirs, because asking
+          a visitor to be written to about the sample couple's wedding is
+          asking about nothing.
+        */}
+        {usingSample ? null : (
+          <form
+            className={styles.lead}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submitLead();
+            }}
+          >
+            <p className={styles.offer}>{copy.offer}</p>
+
+            {/*
+              The honeypot. Off screen, never reachable by tab, never
+              autofilled. A filled one is a bot, and the server answers it 200
+              so it learns nothing about why it failed.
+            */}
+            <input
+              className={styles.trap}
+              type="text"
+              name="company"
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
+
+            <div className={styles.leadRow}>
+              <label className={styles.srOnly} htmlFor={`${id}-email`}>
+                {copy.emailLabel}
+              </label>
+              <input
+                id={`${id}-email`}
+                className={styles.input}
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={copy.emailLabel}
+                maxLength={320}
+                autoComplete="email"
+                spellCheck={false}
+                enterKeyHint="send"
+                required
+              />
+              <button
+                type="submit"
+                className={styles.leadButton}
+                aria-busy={lead.kind === "pending"}
+              >
+                {lead.kind === "pending" ? copy.sending : copy.send}
+              </button>
+            </div>
+
+            <label className={styles.consent}>
+              {/* Never pre-ticked. A pre-ticked box is not consent. */}
+              <input
+                type="checkbox"
+                className={styles.check}
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+              />
+              <span>
+                {copy.consent}{" "}
+                <a
+                  className={styles.privacy}
+                  href={locale === "de" ? "/de/legal/privacy" : "/legal/privacy"}
+                >
+                  {copy.privacyWord}
+                </a>
+              </span>
+            </label>
+
+            {lead.kind === "done" ? (
+              <p className={styles.leadDone} role="status">{copy.sent}</p>
+            ) : null}
+            {lead.kind === "failed" ? (
+              <p className={styles.leadError} role="alert">{lead.message}</p>
+            ) : null}
+          </form>
+        )}
       </div>
     </section>
   );

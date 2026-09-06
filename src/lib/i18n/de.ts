@@ -113,8 +113,8 @@ const privacy: LegalDocument = {
     {
       heading: "Die kurze Fassung",
       body: [
-        "Es gibt hier keine Benutzerkonten und keine Datenbank. Wenn du eure Namen eingibst, bleiben sie in deinem eigenen Browser und sonst nirgends.",
-        "Zu uns gelangen sie erst, wenn du dich zum Kauf entscheidest, und dann zusammen mit der Zahlung.",
+        "Es gibt hier keine Benutzerkonten. Wenn du eure Namen eingibst, bleiben sie in deinem eigenen Browser und sonst nirgends.",
+        "Zu uns gelangen sie in zwei Fällen, die du beide selbst wählst: wenn du dir die Vorschau per E-Mail schicken lässt, oder wenn du dich zum Kauf entscheidest.",
       ],
     },
     {
@@ -123,6 +123,16 @@ const privacy: LegalDocument = {
         "Sobald du eure Vornamen, euer Hochzeitsdatum und ein Design in die Vorschau einträgst, speichern wir das im Local Storage deines Browsers unter einem einzigen Schlüssel, aea.couple, damit die Seite es beim nächsten Besuch noch weiß.",
         "Dieser Eintrag verlässt dein Gerät nicht von allein. Er wird nicht an uns gesendet, niemand sonst kann ihn lesen, und wenn du die Websitedaten für diese Seite löschst, ist er weg.",
         "Deine Sprachwahl liegt auf demselben Weg unter aea.locale.",
+      ],
+    },
+    {
+      heading: "Wenn du dir die Vorschau per E-Mail schicken lässt",
+      body: [
+        "Unter der Vorschau steht ein freiwilliges Feld. Nichts auf dieser Seite wird zurückgehalten, bis du es ausfüllst, und die Vorschau funktioniert so oder so.",
+        "Trägst du eine Adresse ein und setzt das Häkchen, dann speichern wir diese Adresse, die Vornamen und das Datum, die bereits in der Vorschau stehen, das Design, das du gerade ansiehst, deine Sprache und den Zeitpunkt, zu dem du das Häkchen gesetzt hast. Wir speichern das, um dir den Link zu schicken und, falls du nicht gekauft hast, dir ein- oder zweimal dazu zu schreiben.",
+        "Außerdem speichern wir einen gesalzenen Einweg-Hash deiner IP-Adresse, um zu verhindern, dass dieselbe Maschine das Formular hundertfach abschickt. Die Adresse selbst wird nicht gespeichert, und der Hash lässt sich nicht in sie zurückverwandeln.",
+        "Rechtsgrundlage ist deine Einwilligung, Artikel 6 Absatz 1 Buchstabe a DSGVO. Du kannst sie jederzeit widerrufen, indem du auf eine unserer Nachrichten antwortest oder an die Adresse im Impressum schreibst; dann löschen wir den Eintrag. Der Widerruf ist so einfach wie die Einwilligung.",
+        "Ein Eintrag, aus dem kein Kauf wird, wird nach zwölf Monaten gelöscht.",
       ],
     },
     {

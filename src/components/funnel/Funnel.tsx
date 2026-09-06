@@ -4,7 +4,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   DEFAULT_LOCALE, HTML_LANG, readStoredLocale, storeLocale, type Locale,
 } from "@/lib/i18n";
-import { THEME_IDS, type ThemeId } from "@/invite/types";
+import { isSellableTheme, type SellableThemeId } from "@/invite/types";
 import { useCouple } from "@/lib/couple";
 import { Door } from "./Door";
 import { Arrival } from "./Arrival";
@@ -56,8 +56,13 @@ function getServerSnapshot(): Locale {
   return DEFAULT_LOCALE;
 }
 
-function isThemeId(v: string | null): v is ThemeId {
-  return v !== null && (THEME_IDS as readonly string[]).includes(v);
+/*
+ * Sellable only. `/styles/[theme]` exists for sellable themes alone, so this
+ * is the only kind of link that can arrive, and preselecting a theme that
+ * cannot be bought would walk the visitor to a checkout that refuses them.
+ */
+function isPreselectable(v: string | null): v is SellableThemeId {
+  return v !== null && isSellableTheme(v);
 }
 
 export function Funnel() {
@@ -96,7 +101,7 @@ export function Funnel() {
    */
   useEffect(() => {
     const wanted = new URLSearchParams(window.location.search).get("theme");
-    if (isThemeId(wanted)) update({ theme: wanted });
+    if (isPreselectable(wanted)) update({ theme: wanted });
   }, [update]);
 
   return (

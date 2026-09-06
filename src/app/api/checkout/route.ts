@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { THEME_IDS } from "@/invite/types";
+import { SELLABLE_THEME_IDS } from "@/invite/types";
 import { PRICE_ENV_NAME, readStripeConfig } from "@/lib/stripe";
 
 /**
@@ -46,7 +46,13 @@ const CheckoutRequest = z.object({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .refine(isRealCalendarDate, { message: "not a calendar date" }),
-    theme: z.enum(THEME_IDS),
+    /*
+     * Sellable themes only, not every theme the renderer knows. The preview
+     * can show all eight; only the ones the product can build may be bought.
+     * Checked here as well as in the UI because a request body is editable and
+     * this is the last gate before money changes hands.
+     */
+    theme: z.enum(SELLABLE_THEME_IDS),
   }),
   locale: z.enum(["en", "de"]),
 });

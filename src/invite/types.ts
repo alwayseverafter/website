@@ -19,6 +19,26 @@ export const THEME_IDS = [
 ] as const;
 export type ThemeId = (typeof THEME_IDS)[number];
 
+/**
+ * The themes that can be bought today.
+ *
+ * A theme is sellable only once the product can render it, and the product's
+ * palettes are a different set: `PROVENANCE.md` records that the renderer's
+ * architecture was ported but its palettes are new, and `atelier-blanc` is the
+ * only id present on both sides. `invites.theme` in the product carries no
+ * CHECK constraint, so selling one of the other seven would insert cleanly and
+ * fail only when the couple opens what they paid for. That is R3 with the
+ * failure moved as far from its cause as it can get.
+ *
+ * Widen this list in the same commit that ports the palette, never before.
+ */
+export const SELLABLE_THEME_IDS = ["atelier-blanc"] as const;
+export type SellableThemeId = (typeof SELLABLE_THEME_IDS)[number];
+
+export function isSellableTheme(value: string): value is SellableThemeId {
+  return (SELLABLE_THEME_IDS as readonly string[]).includes(value);
+}
+
 export const OPENER_IDS = ["veil", "foil", "envelope", "direct"] as const;
 export type OpenerId = (typeof OPENER_IDS)[number];
 

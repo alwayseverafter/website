@@ -104,3 +104,25 @@ export function readStripeConfig(): StripeConfigResult {
     },
   };
 }
+
+/**
+ * The webhook signing secret, read on demand like everything else here.
+ *
+ * Separate from `readStripeConfig` on purpose: checkout needs prices and a
+ * return origin and does not need this, and the webhook needs this and not the
+ * prices. Bundling them would make each route fail on the other's absence.
+ */
+export function readWebhookConfig():
+  | { ok: true; stripe: Stripe; signingSecret: string }
+  | { ok: false; missing: string[] } {
+  const secretKey = trimmed(process.env.STRIPE_SECRET_KEY);
+  const signingSecret = trimmed(process.env.STRIPE_WEBHOOK_SECRET);
+
+  const missing: string[] = [];
+  if (!secretKey) missing.push("STRIPE_SECRET_KEY");
+  if (!signingSecret) missing.push("STRIPE_WEBHOOK_SECRET");
+  if (missing.length > 0) return { ok: false, missing };
+
+  client ??= new Stripe(secretKey);
+  return { ok: true, stripe: client, signingSecret };
+}

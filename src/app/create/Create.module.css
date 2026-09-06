@@ -1,0 +1,108 @@
+/*
+ * Atelier, unchanged. No boxes, one rule weight, no icons, no badges. The page
+ * a customer sees immediately after paying is the worst possible place to
+ * introduce a second design language.
+ *
+ * Mobile first. Every rule here is the phone rule. R9.
+ */
+
+.main {
+  padding-block: 4rem 5rem;
+}
+
+.inner {
+  max-width: 34rem;
+}
+
+.title {
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  margin-block: 0.75rem 1.5rem;
+  text-wrap: balance;
+}
+
+.body {
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.12rem;
+  line-height: 1.62;
+  color: var(--ink-2);
+  margin-block: 0 1.25rem;
+}
+
+/* The one button on the page. Ink on paper, a hairline, no fill. */
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* R9. 44 px at 320 px, without exception. */
+  min-height: var(--tap);
+  padding-inline: 1.75rem;
+  margin-block: 0.5rem 2rem;
+  border: var(--hair);
+  border-color: var(--ink);
+  font-family: var(--f-ui);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  background: transparent;
+  transition: color var(--t), border-color var(--t);
+}
+
+.primary:hover {
+  color: var(--ink-2);
+  border-color: var(--ink-2);
+}
+
+/*
+ * A stated problem. Separated by space and a hairline rather than by a tinted
+ * box, because a coloured alert panel is the SaaS tell this brand avoids, and
+ * because the page carries no chromatic accent of its own.
+ */
+.notice {
+  font-family: var(--f-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink);
+  border-top: var(--hair);
+  border-bottom: var(--hair);
+  padding-block: 1.1rem;
+  margin-block: 0 1.5rem;
+}
+
+.fine {
+  font-family: var(--f-ui);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--ink-3);
+  margin-block: 0 0.75rem;
+}
+
+/*
+ * A reference someone will read aloud down a phone, or copy into an email.
+ * `break-all` because a Stripe session id is longer than a 320 px screen and
+ * must wrap rather than push the page sideways.
+ */
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82em;
+  letter-spacing: 0;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+@media (min-width: 48rem) {
+  .main { padding-block: 6rem 7rem; }
+  .body { font-size: 1.18rem; }
+}
+
+/* The mark, sitting above the kicker. Colour is inherited: it has none. */
+.mark {
+  display: block;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}

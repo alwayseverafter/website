@@ -1,5 +1,5 @@
 import type { Couple, OpenerId, ThemeId } from "@/invite/types";
-import { THEME_IDS } from "@/invite/types";
+import { isSellableTheme, THEME_IDS } from "@/invite/types";
 
 /**
  * Shared metadata and the editorial content behind /styles.
@@ -394,8 +394,16 @@ export const THEME_COPY: Record<ThemeId, ThemeCopy> = {
   },
 };
 
-/** Gallery and sitemap order. Kept as one list so it cannot drift. */
-export const THEME_ORDER: readonly ThemeId[] = THEME_IDS;
+/**
+ * Gallery and sitemap order. Kept as one list so it cannot drift.
+ *
+ * Sellable themes only. The gallery, the eight style pages, their share images
+ * and the sitemap all read this, so restricting it here is what keeps the site
+ * from ranking, and selling, a style the product cannot build. This is a real
+ * SEO cost, accepted knowingly: one honest page beats eight that sell a thing
+ * that cannot be delivered. See `SELLABLE_THEME_IDS`.
+ */
+export const THEME_ORDER: readonly ThemeId[] = THEME_IDS.filter(isSellableTheme);
 
 /**
  * R3: an unknown slug must be refused, never resolved to a default theme. This

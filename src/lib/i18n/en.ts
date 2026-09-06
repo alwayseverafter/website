@@ -137,8 +137,8 @@ const privacy: LegalDocument = {
     {
       heading: "The short version",
       body: [
-        "There are no accounts here and no database. Typing your names into this site stores them in your own browser and nowhere else.",
-        "They reach us only if you decide to buy, and then they travel with the payment.",
+        "There are no accounts here. Typing your names into this site stores them in your own browser and nowhere else.",
+        "They reach us in two cases, both of which you choose: if you ask us to email you your preview, or if you decide to buy.",
       ],
     },
     {
@@ -147,6 +147,16 @@ const privacy: LegalDocument = {
         "When you put your first names, your wedding date and a chosen design into the preview, we save them in your browser's local storage under a single key, aea.couple, so the page still knows them when you come back.",
         "That entry never leaves your device on its own. It is not sent to us, it is not readable by anyone else, and clearing site data for this site removes it.",
         "Your choice of language is stored the same way, under aea.locale.",
+      ],
+    },
+    {
+      heading: "If you ask us to email you your preview",
+      body: [
+        "Under the preview there is an optional field. Nothing on this site is withheld until you fill it in, and the preview works whether you do or not.",
+        "If you enter an address and tick the box, we store that address, the first names and date already in the preview, the design you were looking at, your language, and the moment you ticked the box. We store it so that we can send you the link and, if you have not bought, write to you once or twice about it.",
+        "We also store a salted, one way hash of your IP address, in order to stop the same machine submitting the form hundreds of times. The address itself is not stored and the hash cannot be turned back into it.",
+        "The legal basis is your consent, Article 6(1)(a) GDPR. You may withdraw it at any time by replying to any message we send, or by writing to the address in the legal notice, and we delete the entry. Withdrawing is as easy as giving it was.",
+        "An entry that never becomes a purchase is deleted after twelve months.",
       ],
     },
     {

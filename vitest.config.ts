@@ -1,6 +1,13 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
+/* The same "@/" the app builds with, so a route can be imported in a test. */
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
   test: {
     /**
      * The parallel agent worktrees under .claude/ hold full copies of this
