@@ -24,6 +24,23 @@ import styles from "./Arrival.module.css";
  * page never has to pretend otherwise.
  */
 
+/**
+ * The sample couple's photographs.
+ *
+ * The invitation on this page is Max and Lena's, which is a sample and not a
+ * fallback (see below), so it carries their pictures for the same reason it
+ * carries their names: a visitor is shown a finished invitation, not a form
+ * with the pictures missing. Nothing is invented when a photograph is absent —
+ * `InvitePhotos` is optional the whole way down and an unset plate is simply
+ * not rendered.
+ *
+ * The Mirror rebinds the names on every keystroke and deliberately leaves
+ * these alone: a visitor typing their own names has not uploaded anything yet,
+ * and swapping to an empty frame at the first keypress would take the finished
+ * invitation away at exactly the moment it is doing its work.
+ */
+const SAMPLE_PHOTOS = { hero: "/titel.jpg", moment: "/moment.webp" } as const;
+
 /** The four marks that report how far down the invitation a visitor read. */
 const DEPTHS = [25, 50, 75, 100] as const;
 
@@ -89,6 +106,7 @@ export function Arrival({ locale = "en" }: ArrivalProps) {
           locale={locale}
           fit="page"
           arrived
+          photos={SAMPLE_PHOTOS}
         />
       </div>
 

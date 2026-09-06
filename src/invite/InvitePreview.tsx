@@ -8,7 +8,7 @@ import { Opener, type DisplayName } from "./Opener";
 import { Rule } from "./Ornament";
 import { Reveal } from "./Reveal";
 import { THEMES, themeVars } from "./themes";
-import type { InvitePreviewProps, OpenerId } from "./types";
+import type { InvitePhotos, InvitePreviewProps, OpenerId } from "./types";
 import styles from "./invite.module.css";
 
 /**
@@ -33,6 +33,7 @@ export function InvitePreview({
   locale,
   fit,
   arrived = false,
+  photos,
 }: InvitePreviewProps): ReactElement {
   const theme = THEMES[couple.theme];
   const m = MESSAGES[locale];
@@ -78,6 +79,13 @@ export function InvitePreview({
   const dateLabel =
     fit === "thumb" ? formatShort(parsed.at, locale) : formatLong(parsed.at, locale);
 
+  /*
+   * A 150px tile has no room for a photograph above the names, and shrinking
+   * one until it fits is the same mistake as shrinking the long date. The
+   * plates are a page and card concern only.
+   */
+  const plates: InvitePhotos = fit === "thumb" ? {} : (photos ?? {});
+
   const showCover = !arrived && hasCover(opener);
   const covered = showCover && !opened;
 
@@ -100,6 +108,7 @@ export function InvitePreview({
       <div className={styles.scroll} inert={covered}>
         <Reveal motion={theme.motion}>
           <div className={styles.sheet}>
+            {plates.hero ? <Plate src={plates.hero} kind="hero" /> : null}
             <p className={styles.kicker}>{m.kicker}</p>
             <Rule id={theme.ornament} />
             <p className={styles.names}>
@@ -112,6 +121,7 @@ export function InvitePreview({
             <Rule id={theme.ornament} />
             <p className={styles.date}>{dateLabel}</p>
             {fit === "thumb" ? null : <Countdown at={parsed.at} m={m} />}
+            {plates.moment ? <Plate src={plates.moment} kind="moment" /> : null}
           </div>
         </Reveal>
       </div>
@@ -134,6 +144,36 @@ export function InvitePreview({
 }
 
 /* --------------------------------------------------------------- pieces -- */
+
+/**
+ * A photograph mounted on the sheet rather than laid under it.
+ *
+ * Full bleed behind the type is how a wedding page ends up with names that are
+ * legible over one photograph and lost over the next, and the couple supplies
+ * the photograph. A plate cannot do that: the type keeps its own ground and the
+ * picture keeps its own edges, whatever is inside it.
+ *
+ * A plain `<img>`, never `next/image`, matching `Door.tsx`: the renderer is
+ * copied wholesale between two repos (`PROVENANCE.md`) and must not acquire a
+ * dependency on one framework's optimiser to paint.
+ *
+ * R6: decoration is never the pointer target.
+ */
+function Plate({ src, kind }: { src: string; kind: "hero" | "moment" }): ReactElement {
+  return (
+    <span className={styles.plate} data-kind={kind} aria-hidden="true">
+      {/*
+        eslint-disable-next-line @next/next/no-img-element --
+        `next/image` is a Next import, and this directory has none: the renderer
+        is copied wholesale into and out of `svareed/gifting` (PROVENANCE.md),
+        which is only possible while it depends on React and nothing else. The
+        plate is below the fold and lazy, so it is not the LCP element the rule
+        is protecting.
+      */}
+      <img className={styles.plateImg} src={src} alt="" draggable={false} loading="lazy" />
+    </span>
+  );
+}
 
 /**
  * Whether an opener puts something between the guest and the invitation.

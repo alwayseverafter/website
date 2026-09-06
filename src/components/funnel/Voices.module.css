@@ -1,0 +1,108 @@
+/*
+ * The Voices. Mobile first: every rule here is the phone rule, and desktop is
+ * the media query at the bottom. See docs/LESSONS.md R9.
+ *
+ * No boxes and no cards, matching The Machine: the only separator is a single
+ * hairline at one weight. A testimonial in a rounded card with a drop shadow is
+ * the SaaS tell the brand rules forbid, and it is also the arrangement a reader
+ * has learned to skip.
+ */
+
+.section {
+  padding-block: 3.5rem;
+  border-top: var(--hair);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.title {
+  font-size: 2.1rem;
+  /* Display type is set tight; a long line at 320px still needs somewhere to break. */
+  max-width: 16ch;
+}
+
+.voices {
+  display: flex;
+  flex-direction: column;
+}
+
+.voice {
+  /* `figure` carries a default margin in every browser. */
+  margin: 0;
+  padding-block: 1.4rem;
+  border-top: var(--hair);
+}
+
+/* The column closes on a hairline, so the section does not trail off. */
+.voice:last-child {
+  border-bottom: var(--hair);
+}
+
+.quote {
+  margin: 0;
+  font-family: var(--f-body);
+  font-weight: 300;
+  font-size: 1.14rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  /*
+   * Held near 42 characters a quote reads as speech rather than as body copy,
+   * which is the whole difference between a testimonial and a paragraph of
+   * marketing.
+   */
+  max-width: 42ch;
+}
+
+.who {
+  margin-block-start: 0.85rem;
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /*
+   * The attribution is quieter than the quote it belongs to. A name set at the
+   * same weight as the sentence competes with it, and the sentence is what
+   * sells.
+   */
+  color: var(--ink-3);
+}
+
+@media (min-width: 48rem) {
+  .section {
+    padding-block: 6rem;
+  }
+
+  .grid {
+    /*
+     * The same editorial arrangement as The Machine, so the two sections read
+     * as one argument continuing rather than as two designs meeting.
+     */
+    display: grid;
+    grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.6fr);
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  .title {
+    font-size: 2.9rem;
+  }
+
+  .voice {
+    padding-block: 1.9rem;
+  }
+
+  .quote {
+    font-size: 1.24rem;
+  }
+}

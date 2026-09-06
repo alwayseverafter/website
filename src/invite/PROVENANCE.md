@@ -27,6 +27,13 @@ every sync.
   the funnel's prop contract. Porting it would have meant a fallback for a
   missing `heroImage`, which is precisely the shape of B1. The funnel's fourth
   opener is `direct`, which is the honest absence of a cover.
+
+  Photographs have since arrived, as `InvitePhotos` on `InvitePreviewProps`, but
+  the reasoning above is intact rather than overturned: the prop is optional and
+  has no fallback at any level. An unset plate is not rendered, so there is
+  nothing to stand in for and no B1 to repeat. The opener itself is still not
+  ported — that needs the film as well, and the film belongs to the funnel's
+  door.
 - **The `deco` (Cinzel) and `modern` (Playfair, Outfit) font pairings.** The
   funnel loads three faces. A theme naming a face nobody loads renders its
   fallback with no warning, which is R3. Pairings here are built from Italiana,
