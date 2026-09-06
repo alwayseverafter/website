@@ -324,8 +324,8 @@
 /* ── reduced motion ─────────────────────────────────────────────────── */
 
 /*
- * The film is skipped in Door.tsx and the arrived state is rendered directly.
- * This is the belt and braces for anything that would still move.
+ * The film runs for everyone, matching max-und-lena: a supplied clip is the
+ * door's opening rather than decoration. This stills the chrome around it.
  */
 @media (prefers-reduced-motion: reduce) {
   .top,

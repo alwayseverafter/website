@@ -10,8 +10,8 @@ import { Door } from "./Door";
 import { Arrival } from "./Arrival";
 import { Turn } from "./Turn";
 import { Mirror } from "./Mirror";
-import { Styles } from "./Styles";
 import { Machine } from "./Machine";
+import { Voices } from "./Voices";
 import { Choice } from "./Choice";
 import { Close } from "./Close";
 
@@ -22,8 +22,8 @@ import { Close } from "./Close";
  *   Arrival  the product sells itself, wordlessly
  *   Turn     break the fourth wall
  *   Mirror   their names, no signup. The conversion engine.
- *   Styles   move the question from "do I want this" to "which one"
  *   Machine  answer the practical objection before it is voiced
+ *   Voices   other couples answer the doubts the page cannot answer itself
  *   Choice   two tiers, no meter
  *   Close    one button
  *
@@ -105,8 +105,8 @@ export function Funnel() {
       <Arrival locale={locale} />
       <Turn locale={locale} />
       <Mirror locale={locale} />
-      <Styles locale={locale} />
       <Machine locale={locale} />
+      <Voices locale={locale} />
       <Choice locale={locale} />
       <Close locale={locale} />
     </>

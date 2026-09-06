@@ -145,6 +145,58 @@
   overflow-wrap: anywhere;
 }
 
+/* ============================================================== plates == */
+
+/*
+ * Photographs mounted into the invitation, in the two arrangements
+ * max-und-lena uses (`svareed/gifting`, `.plate` and `.band` in its
+ * `globals.css`), because replicating that view is the point of them.
+ *
+ * hero    a mounted print above the names. Capped at `min(62cqw, 21rem)` and
+ *         centred, with a mat of padding in the surface colour, so it reads as
+ *         a photograph mounted on the sheet. Uncapped it fills the whole width
+ *         of a page-fit invitation and stops being a print on a card.
+ * moment  one frame at full width with nothing set over it, closing the sheet.
+ *
+ * R1: every dimension is a container unit. The source pairs its cap with a
+ * `@media (max-height: 46rem)` and that part is deliberately NOT ported — the
+ * renderer must not read the viewport (see `InviteFit`), and `min(62cqw, …)`
+ * already shrinks the print with the frame it sits in, which is the behaviour
+ * the height query was buying.
+ */
+.plate {
+  display: block;
+  margin-inline: auto;
+}
+
+.plate[data-kind="hero"] {
+  inline-size: min(62cqw, 21rem);
+  margin-block-end: clamp(1.4rem, 5cqw, 2.4rem);
+  padding: clamp(0.3rem, 1.6cqw, 0.55rem);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.plate[data-kind="moment"] {
+  inline-size: 100%;
+  margin-block-start: clamp(1.6rem, 6cqw, 2.8rem);
+}
+
+.plateImg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+  object-position: center;
+  /* R6. Decoration is never the pointer target, and never draggable. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.plate[data-kind="hero"] .plateImg { aspect-ratio: 4 / 5; }
+.plate[data-kind="moment"] .plateImg { aspect-ratio: 8 / 5; }
+
 /* ================================================================ type == */
 
 .kicker {

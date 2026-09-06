@@ -41,11 +41,31 @@ export type Couple = {
  */
 export type InviteFit = "page" | "card" | "thumb";
 
+/**
+ * Photographs mounted into the invitation.
+ *
+ * Optional, and with no fallback anywhere: absent means the plate is not
+ * rendered at all. That is the whole reason this can widen the seam without
+ * repeating the mistake `PROVENANCE.md` records against the `tor` opener,
+ * which needed a stand-in for a missing photograph and so was left behind.
+ * Nothing here is invented when it is not supplied.
+ *
+ * The funnel does not collect these — a visitor types names and a date, not a
+ * photograph — so they stay off `Couple` and sit beside it.
+ */
+export type InvitePhotos = {
+  /** The plate above the names. Portrait or square reads best. */
+  hero?: string;
+  /** The plate below the countdown, closing the sheet. */
+  moment?: string;
+};
+
 export type InvitePreviewProps = {
   couple: Couple;
   opener: OpenerId;
   locale: Locale;
   fit: InviteFit;
-  /** Skips the opener and renders the arrived state. Used by The Styles. */
+  /** Skips the opener and renders the arrived state. */
   arrived?: boolean;
+  photos?: InvitePhotos;
 };

@@ -70,21 +70,16 @@ const STILL_LANDSCAPE = "/tor-poster.jpg";
  */
 const LANDSCAPE_MEDIA = "(min-aspect-ratio: 3 / 4)";
 
-const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-
 /**
- * The only two words the door says in its own voice.
+ * The only word the door says in its own voice.
  *
  * The wordmark is the brand and is never translated, which is why it is not in
- * here. These two are chrome, and a German visitor who has just pressed DE and
+ * here. This one is chrome, and a German visitor who has just pressed DE and
  * is still looking at the word "Open" has been told the switch does nothing.
- *
- * "Stile" is the word The Styles already uses for itself, so the link and the
- * heading it scrolls to agree.
  */
-const COPY: Record<Locale, { open: string; styles: string }> = {
-  en: { open: "Open", styles: "Styles" },
-  de: { open: "Öffnen", styles: "Stile" },
+const COPY: Record<Locale, { open: string }> = {
+  en: { open: "Open" },
+  de: { open: "Öffnen" },
 };
 
 /** Both masters are 3.4s. Only ever used if the browser will not report it. */
@@ -233,10 +228,9 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
     track({ name: "door_opened" }, true);
 
     const video = videoRef.current;
-    const reduced = window.matchMedia(REDUCED_MOTION).matches;
 
-    if (!video || reduced) {
-      /* Reduced motion: skip the film, render the arrived state directly. */
+    if (!video) {
+      /* No element to play: render the arrived state directly. */
       finish();
       return;
     }
@@ -368,9 +362,6 @@ export function Door({ locale = "en", onLocaleChange }: DoorProps) {
           ) : (
             <span />
           )}
-          <a className={styles.topItem} href="#styles">
-            {copy.styles}
-          </a>
         </nav>
 
         {/*
