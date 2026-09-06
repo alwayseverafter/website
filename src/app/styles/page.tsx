@@ -5,6 +5,8 @@ import { InvitePreview } from "@/invite/InvitePreview";
 import {
   absoluteUrl,
   SITE_NAME,
+  STYLE_COUNT,
+  STYLE_NOUN,
   THEME_COPY,
   THEME_ORDER,
   sampleCouple,
@@ -22,9 +24,10 @@ import styles from "./styles.module.css";
  * JavaScript of its own.
  */
 
-const TITLE = "Eight wedding invitation styles, one flat price";
+const TITLE = `${STYLE_COUNT} wedding invitation ${STYLE_NOUN}, one flat price`;
 const DESCRIPTION =
-  "Eight digital wedding invitation styles, from paper white to black glass. Each one is a full sample you can read. One price per wedding, unlimited guests.";
+  `${STYLE_COUNT} digital wedding invitation ${STYLE_NOUN} you can read in full, not a swatch.`
+  + " One price per wedding, unlimited guests.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -81,13 +84,19 @@ export default function StylesPage() {
 
       <section className={styles.intro}>
         <p className="kicker">The styles</p>
-        <h1 className={`display ${styles.h1}`}>Eight ways to say the same two names</h1>
+        <h1 className={`display ${styles.h1}`}>
+          {THEME_ORDER.length === 1
+            ? "One way to say the same two names"
+            : `${STYLE_COUNT} ways to say the same two names`}
+        </h1>
         <p className="lede">
           Every style below is a complete invitation, not a swatch. Open one and read it.
           The one you choose changes the paper, the ink, the face the names are set in and
           the way the invitation opens on a guest&rsquo;s phone. It does not change the price.
         </p>
-        <p className={styles.count}>Eight styles, four openers, one flat price per wedding</p>
+        <p className={styles.count}>
+          {STYLE_COUNT} {STYLE_NOUN}, four openers, one flat price per wedding
+        </p>
       </section>
 
       <ul className={styles.grid}>

@@ -406,6 +406,34 @@ export const THEME_COPY: Record<ThemeId, ThemeCopy> = {
 export const THEME_ORDER: readonly ThemeId[] = THEME_IDS.filter(isSellableTheme);
 
 /**
+ * The count of sellable styles, spelled, because this brand writes numbers as
+ * words in prose.
+ *
+ * Derived rather than typed. The gallery's title, description, heading and
+ * count line all said "Eight" while `THEME_ORDER` had been narrowed to one, so
+ * a visitor read "Eight ways to say the same two names" above a single card.
+ * A hardcoded number in copy is a fact that goes stale silently, which is the
+ * shape of R3, so there is no longer a place to type one.
+ */
+const WORDS = [
+  "No", "One", "Two", "Three", "Four",
+  "Five", "Six", "Seven", "Eight", "Nine",
+] as const;
+
+export function spelledCount(n: number): string {
+  return WORDS[n] ?? String(n);
+}
+
+/** How many styles can be bought right now, as a word. Capitalised. */
+export const STYLE_COUNT = spelledCount(THEME_ORDER.length);
+
+/** The same, lowercase, for mid-sentence use. */
+export const STYLE_COUNT_LOWER = STYLE_COUNT.toLowerCase();
+
+/** Singular or plural, so the copy reads in both states. */
+export const STYLE_NOUN = THEME_ORDER.length === 1 ? "style" : "styles";
+
+/**
  * R3: an unknown slug must be refused, never resolved to a default theme. This
  * is the same class of bug as the `tor` opener silently rendering `veil`.
  */

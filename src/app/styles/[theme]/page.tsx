@@ -8,7 +8,10 @@ import {
   PRICE,
   SITE_NAME,
   THEME_COPY,
+  STYLE_COUNT_LOWER,
+  STYLE_NOUN,
   THEME_ORDER,
+  spelledCount,
   absoluteUrl,
   formatSampleDate,
   isThemeId,
@@ -152,7 +155,7 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
           {SITE_NAME}
         </Link>
         <Link href="/styles" className={styles.back}>
-          All eight styles
+          All {STYLE_COUNT_LOWER} {STYLE_NOUN}
         </Link>
       </header>
 
@@ -222,7 +225,18 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
 
       <hr className="hair" />
 
-      <h2 className={`display ${styles.h2}`}>The other seven</h2>
+      {/*
+        Rendered only when there is another style to link to. `otherThemes`
+        filters THEME_ORDER, so while one style is sellable this list is empty
+        and the heading would announce links that are not there.
+      */}
+      {otherThemes(theme).length === 0 ? null : (
+        <>
+      <h2 className={`display ${styles.h2}`}>
+        {otherThemes(theme).length === 1
+          ? "The other one"
+          : `The other ${spelledCount(otherThemes(theme).length).toLowerCase()}`}
+      </h2>
       <ul className={styles.others}>
         {otherThemes(theme).map((other) => {
           const o = THEME_COPY[other];
@@ -236,6 +250,8 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
           );
         })}
       </ul>
+        </>
+      )}
 
       <hr className="hair" />
 
