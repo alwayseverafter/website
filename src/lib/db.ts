@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Tier } from "./analytics";
 
 /**
  * The only file that talks to the database.
@@ -254,6 +255,12 @@ export async function recordLead(input: {
   theme: string;
   locale: Locale;
   ipHash: string | null;
+  /**
+   * Which tier they asked about, when they asked from The Close while checkout
+   * was shut. Absent from The Mirror, which asks for a preview rather than for
+   * a tier, and absent is not 'invitation': see the column's migration.
+   */
+  tier?: Tier | null;
 }): Promise<DbResult<{ id: string }>> {
   const configured = readDbConfig();
   if (!configured.ok) return { ok: false, reason: "not_configured", missing: configured.missing };
@@ -271,6 +278,13 @@ export async function recordLead(input: {
         /* The moment, not a boolean. Refreshed when they ask again. */
         consent_at: new Date().toISOString(),
         ip_hash: input.ipHash,
+        /*
+         * Written only when there is one. An upsert writes every column it is
+         * handed, so passing null here would erase the tier this address
+         * already told us on its way through The Close, the one time the
+         * second submission knows less than the first.
+         */
+        ...(input.tier ? { tier: input.tier } : {}),
       },
       { onConflict: "email" },
     )

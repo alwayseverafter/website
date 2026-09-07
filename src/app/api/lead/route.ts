@@ -4,8 +4,12 @@ import { recordLead } from "@/lib/db";
 import { clientIp, hashIp } from "@/lib/iphash";
 
 /**
- * A couple who named themselves in The Mirror and asked for their preview by
- * email, without buying.
+ * A couple who asked to be written to without buying.
+ *
+ * Two sections reach this. The Mirror asks once the invitation carries their
+ * names, for the preview by email. The Close asks while Stripe is unconfigured,
+ * where there is a tier chosen and no way to pay for it, and sends that tier
+ * along; see `src/components/funnel/Close.tsx`.
  *
  * Writes straight to the database. An earlier version forwarded this to the
  * product so that this site would not hold a database key, but the product is
@@ -32,6 +36,14 @@ const Body = z.object({
    */
   theme: z.string().trim().max(60).nullish(),
   locale: z.enum(["en", "de"]),
+  /*
+   * Which tier they asked about. Sent by The Close, where a visitor has
+   * already chosen between the two, and absent from The Mirror, which asks for
+   * a preview rather than for a tier. The two strings are the ones
+   * `/api/checkout` accepts, so the tier a lead wanted and the tier a client
+   * bought are one vocabulary rather than two that drift.
+   */
+  tier: z.enum(["invitation", "commission"]).nullish(),
   /* Required, and required to be true. A lead stored without consent is a
      lead we may not mail, which makes it worthless and a liability besides. */
   consent: z.literal(true),
@@ -56,7 +68,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       { fields });
   }
 
-  const { trap, email, partnerA, partnerB, weddingDate, theme, locale } = parsed.data;
+  const { trap, email, partnerA, partnerB, weddingDate, theme, locale, tier } = parsed.data;
 
   /* Answer 200 so the bot learns nothing about why it failed. */
   if (trap) return NextResponse.json({ ok: true });
@@ -69,6 +81,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     theme: theme ?? "",
     locale,
     ipHash: hashIp(clientIp(request)),
+    tier: tier ?? null,
   });
 
   if (!stored.ok) {
