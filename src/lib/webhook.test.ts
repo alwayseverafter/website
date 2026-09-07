@@ -22,10 +22,10 @@ let stripe: Stripe;
 beforeAll(async () => {
   process.env.STRIPE_SECRET_KEY = "sk_test_key";
   process.env.STRIPE_WEBHOOK_SECRET = SIGNING_SECRET;
-  /* Deliberately left unset: provisioning is unconfigured, which is what makes
-     the "invitation" case stop at a reportable 500 instead of a network call. */
-  delete process.env.DAVET_PROVISION_URL;
-  delete process.env.DAVET_PROVISION_SECRET;
+  /* Deliberately left unset: the database is unconfigured, which is what makes
+     the paid case stop at a reportable 500 instead of a network call. */
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   stripe = new Stripe("sk_test_key");
   POST = (await import("../app/api/stripe/webhook/route")).POST;
@@ -50,6 +50,11 @@ function sessionEvent(overrides: Record<string, unknown> = {}, type = "checkout.
         id: "cs_test_abc",
         object: "checkout.session",
         payment_status: "paid",
+        // The charge is read from the session, never from a constant in the
+        // codebase: a price in source can drift from what was billed.
+        amount_total: 24900,
+        currency: "usd",
+        payment_intent: "pi_test_1",
         customer_details: { email: "max@example.com" },
         metadata: { ...METADATA },
         ...overrides,
@@ -114,12 +119,15 @@ describe("events this route does not act on", () => {
     expect(await res.json()).toMatchObject({ ignored: "unpaid" });
   });
 
-  it("defers The Commission to a human rather than provisioning it", async () => {
-    // The tier is deliberately manual: a person builds each one, which is what
-    // the price buys. Self-serve provisioning would deliver the wrong thing.
+  it("records The Commission as an order like any other", async () => {
+    // An earlier version deferred this tier without recording it, because
+    // provisioning a self-serve invitation for it would have delivered the
+    // wrong thing. There is no provisioning now: the row is a financial
+    // record, the sku says which tier, and status says a human still owes
+    // work. Not recording a payment is never the right answer.
     const res = await send(sessionEvent({ metadata: { ...METADATA, tier: "commission" } }));
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ deferred: "commission" });
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe("client_failed");
   });
 });
 
@@ -146,17 +154,46 @@ describe("a paid session that cannot be fulfilled", () => {
     const res = await send(sessionEvent({
       customer_details: {}, customer_email: "lena@example.com",
     }));
-    // Gets past metadata reading and stops at provisioning, which is unset
+    // Gets past metadata reading and stops at the database, which is unset
     // here. 500 rather than 400 is the point: it is retryable.
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe("provision_failed");
+    expect((await res.json()).error).toBe("client_failed");
   });
 });
 
-describe("provisioning failure is retryable", () => {
+describe("a database failure is retryable", () => {
   it("returns 500 so Stripe redelivers, rather than swallowing the payment", async () => {
     const res = await send(sessionEvent());
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe("provision_failed");
+    expect((await res.json()).error).toBe("client_failed");
+  });
+});
+
+describe("what the route reads from the session rather than from source", () => {
+  it("refuses a paid session with no amount, rather than recording a guess", async () => {
+    // The alternative is inventing the figure from Choice.tsx, which can drift
+    // from what Stripe actually charged. A financial record may not be a guess.
+    const e = sessionEvent();
+    delete (e.data.object as Record<string, unknown>).amount_total;
+    const res = await send(e);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("incomplete_metadata");
+  });
+
+  it("refuses a paid session with no currency", async () => {
+    const e = sessionEvent();
+    delete (e.data.object as Record<string, unknown>).currency;
+    expect((await send(e)).status).toBe(400);
+  });
+
+  it("accepts a session carrying a billing country", async () => {
+    // Reaches the database, which is unconfigured here, proving the country
+    // did not trip metadata reading. clients.country checks ^[A-Z]{2}$, so the
+    // route uppercases what Stripe returns.
+    const res = await send(sessionEvent({
+      customer_details: { email: "max@example.com", address: { country: "us" } },
+    }));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe("client_failed");
   });
 });
