@@ -152,8 +152,8 @@ const privacy: LegalDocument = {
     {
       heading: "If you ask us to email you your preview",
       body: [
-        "Under the preview there is an optional field. Nothing on this site is withheld until you fill it in, and the preview works whether you do or not.",
-        "If you enter an address and tick the box, we store that address, the first names and date already in the preview, the design you were looking at, your language, and the moment you ticked the box. We store it so that we can send you the link and, if you have not bought, write to you once or twice about it.",
+        "Under the preview there is an optional field. Nothing on this site is withheld until you fill it in, and the preview works whether you do or not. While payment is not open, the same field appears beside the price, so that you can ask to be told when it is.",
+        "If you enter an address and tick the box, we store that address, the first names and date already in the preview, the design you were looking at, your language, which of the two tiers you had chosen if you asked from beside the price, and the moment you ticked the box. We store it so that we can send you the link and, if you have not bought, write to you once or twice about it.",
         "We also store a salted, one way hash of your IP address, in order to stop the same machine submitting the form hundreds of times. The address itself is not stored and the hash cannot be turned back into it.",
         "The legal basis is your consent, Article 6(1)(a) GDPR. You may withdraw it at any time by replying to any message we send, or by writing to the address in the legal notice, and we delete the entry. Withdrawing is as easy as giving it was.",
         "An entry that never becomes a purchase is deleted after twelve months.",

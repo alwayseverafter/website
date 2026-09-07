@@ -128,8 +128,8 @@ const privacy: LegalDocument = {
     {
       heading: "Wenn du dir die Vorschau per E-Mail schicken lässt",
       body: [
-        "Unter der Vorschau steht ein freiwilliges Feld. Nichts auf dieser Seite wird zurückgehalten, bis du es ausfüllst, und die Vorschau funktioniert so oder so.",
-        "Trägst du eine Adresse ein und setzt das Häkchen, dann speichern wir diese Adresse, die Vornamen und das Datum, die bereits in der Vorschau stehen, das Design, das du gerade ansiehst, deine Sprache und den Zeitpunkt, zu dem du das Häkchen gesetzt hast. Wir speichern das, um dir den Link zu schicken und, falls du nicht gekauft hast, dir ein- oder zweimal dazu zu schreiben.",
+        "Unter der Vorschau steht ein freiwilliges Feld. Nichts auf dieser Seite wird zurückgehalten, bis du es ausfüllst, und die Vorschau funktioniert so oder so. Solange die Zahlung nicht offen ist, steht dasselbe Feld neben dem Preis, damit du dir sagen lassen kannst, wann es losgeht.",
+        "Trägst du eine Adresse ein und setzt das Häkchen, dann speichern wir diese Adresse, die Vornamen und das Datum, die bereits in der Vorschau stehen, das Design, das du gerade ansiehst, deine Sprache, welche der beiden Varianten du gewählt hattest, falls du neben dem Preis gefragt hast, und den Zeitpunkt, zu dem du das Häkchen gesetzt hast. Wir speichern das, um dir den Link zu schicken und, falls du nicht gekauft hast, dir ein- oder zweimal dazu zu schreiben.",
         "Außerdem speichern wir einen gesalzenen Einweg-Hash deiner IP-Adresse, um zu verhindern, dass dieselbe Maschine das Formular hundertfach abschickt. Die Adresse selbst wird nicht gespeichert, und der Hash lässt sich nicht in sie zurückverwandeln.",
         "Rechtsgrundlage ist deine Einwilligung, Artikel 6 Absatz 1 Buchstabe a DSGVO. Du kannst sie jederzeit widerrufen, indem du auf eine unserer Nachrichten antwortest oder an die Adresse im Impressum schreibst; dann löschen wir den Eintrag. Der Widerruf ist so einfach wie die Einwilligung.",
         "Ein Eintrag, aus dem kein Kauf wird, wird nach zwölf Monaten gelöscht.",
