@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Funnel } from "@/components/funnel/Funnel";
+import { STYLE_COUNT } from "@/lib/seo";
 
 /**
  * The home page is the funnel. It stays a server component so it can carry its
@@ -15,9 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  /*
+   * The count is read here, on the server, and handed across the boundary as a
+   * string. `@/lib/seo` reaches the whole catalogue, so importing it inside the
+   * client component would put forty-six entry modules in the browser bundle.
+   */
   return (
     <main>
-      <Funnel />
+      <Funnel styleCount={STYLE_COUNT} />
     </main>
   );
 }
