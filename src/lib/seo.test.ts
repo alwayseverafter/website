@@ -280,6 +280,48 @@ describe("prose helpers", () => {
   });
 });
 
+/*
+ * The redirects live in next.config.ts, outside everything else here tests,
+ * and that is exactly how they shadowed the whole catalogue: forty-six pages
+ * were prerendered, listed and in the sitemap, and every one of them 307'd to
+ * the index in production. Nothing in the app could see it, because the rule
+ * is applied by the build.
+ */
+describe("build redirects", () => {
+  it("does not shadow a page that exists", async () => {
+    const { default: config } = await import("../../next.config");
+    const redirects = await config.redirects?.() ?? [];
+    const shadowed = redirects
+      .map((rule) => rule.source)
+      .filter((source) => THEME_ORDER.some((id) => themePath(id) === source));
+    expect(
+      shadowed,
+      `these style pages are built and listed but redirected away: ${shadowed.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("still rescues the withheld originals rather than 404ing them", async () => {
+    const { default: config } = await import("../../next.config");
+    const redirects = await config.redirects?.() ?? [];
+    const sources = redirects.map((rule) => rule.source);
+    for (const id of WITHHELD_BASE) {
+      expect(sources, `${id} has no page and no redirect`).toContain(themePath(id));
+    }
+  });
+
+  /*
+   * 307, not 308. The restriction has a removal date, and a permanent
+   * redirect is cached by every browser that sees it.
+   */
+  it("keeps every rescue temporary", async () => {
+    const { default: config } = await import("../../next.config");
+    const redirects = await config.redirects?.() ?? [];
+    for (const rule of redirects) {
+      expect(rule.permanent, `${rule.source} is a permanent redirect`).toBe(false);
+    }
+  });
+});
+
 describe("the catalogue index", () => {
   it("keys every entry by its own id", () => {
     for (const [id, entry] of Object.entries(CATALOG)) {

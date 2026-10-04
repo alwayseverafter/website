@@ -1,18 +1,27 @@
 import type { NextConfig } from "next";
-import { SELLABLE_THEME_IDS, THEME_IDS } from "./src/invite/types";
+import { BASE_THEME_IDS, SELLABLE_THEME_IDS } from "./src/invite/types";
 
 /**
- * The styles that exist in the renderer but cannot be bought.
+ * The original styles that have no page of their own.
  *
- * Derived, not typed out. `/styles/[theme]` sets `dynamicParams = false` and
- * builds its params from the sellable list, so narrowing that list turned every
- * other style page into a hard 404 with no redirect. Any link already shared or
- * indexed was simply dead.
+ * `/styles/[theme]` sets `dynamicParams = false` and builds its params from
+ * `THEME_ORDER`, so a style outside that list is a hard 404 with no redirect
+ * and any link already shared or indexed is simply dead. These seven are in
+ * that position: written, but deliberately neither sold nor listed.
  *
- * Temporary, not permanent: the restriction lifts when the palettes are ported,
- * so a 308 would be a lie cached by every browser that saw it.
+ * Scoped to `BASE_THEME_IDS`, and that scoping is load-bearing. This list was
+ * once every unsellable theme, which was the same set back when the gallery
+ * was sellable-only. The catalogue broke that equivalence: its forty-six
+ * styles are listed and routed but not yet buyable, so the old derivation
+ * matched all of them and 307'd every catalogue page to the index. They were
+ * prerendered and unreachable, and no test caught it because the redirect
+ * lives in the build config rather than in the app. `seo.test.ts` now asserts
+ * that nothing here shadows a page that exists.
+ *
+ * Temporary, not permanent: the restriction lifts when the palettes are
+ * ported, so a 308 would be a lie cached by every browser that saw it.
  */
-const UNSELLABLE = THEME_IDS.filter(
+const UNROUTED = BASE_THEME_IDS.filter(
   (theme) => !(SELLABLE_THEME_IDS as readonly string[]).includes(theme),
 );
 
@@ -30,10 +39,10 @@ const nextConfig: NextConfig = {
    */
   turbopack: { root: process.env.AEA_ROOT ?? process.cwd() },
   async redirects() {
-    return UNSELLABLE.map((theme) => ({
+    return UNROUTED.map((theme) => ({
       source: `/styles/${theme}`,
       destination: "/styles",
-      /* 307. See UNSELLABLE above: a restriction with a removal date. */
+      /* 307. See UNROUTED above: a restriction with a removal date. */
       permanent: false,
     }));
   },
