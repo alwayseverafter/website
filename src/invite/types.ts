@@ -7,7 +7,10 @@
  * touching a single funnel section.
  */
 
-export const THEME_IDS = [
+/**
+ * The eight styles the renderer shipped with. Ported from the product repo.
+ */
+export const BASE_THEME_IDS = [
   "atelier-blanc",
   "vicioso",
   "noir",
@@ -17,7 +20,84 @@ export const THEME_IDS = [
   "porcelain",
   "obsidian",
 ] as const;
-export type ThemeId = (typeof THEME_IDS)[number];
+export type BaseThemeId = (typeof BASE_THEME_IDS)[number];
+
+/**
+ * The catalogue styles.
+ *
+ * Each one is a file under `src/catalog/entries/`, and that file is the only
+ * place its tokens and its copy are written. The id appears here and nowhere
+ * else, so adding a style is two edits: this list and one new file.
+ *
+ * Save the dates carry an `std-` prefix because a save the date and an
+ * invitation may share a name (both sets have a "Floral" and a "Bloom" in the
+ * source we drew from) and a slug is a URL. Prefixing is what keeps two
+ * different products off one page.
+ */
+export const CATALOG_THEME_IDS = [
+  /* Invitations */
+  "vitrail",
+  "regalia",
+  "diurne",
+  "hacienda",
+  "maison-dor",
+  "palazzo",
+  "velluto",
+  "belvedere",
+  "perla",
+  "riviera",
+  "broderie",
+  "esmeralda",
+  "ricamo",
+  "lario",
+  "giardino",
+  "cygne",
+  "papier",
+  "regence",
+  "mosaico",
+  "cadence",
+  "laguna",
+  "savane",
+  "rosaio",
+  "gazette",
+  "fiore",
+  "amalfi",
+  "marine",
+  "levante",
+  "verger",
+  "caramelo",
+  "lineal",
+  "voyage",
+  /* Save the dates */
+  "std-tourterelle",
+  "std-grattage",
+  "std-palatine",
+  "std-grattage-dentelle",
+  "std-voile",
+  "std-dentelle",
+  "std-cisne",
+  "std-fleuron",
+  "std-revelo",
+  "std-boccio",
+  "std-chandelle",
+  "std-oasis",
+  "std-jardin",
+  "std-cabana",
+] as const;
+export type CatalogThemeId = (typeof CATALOG_THEME_IDS)[number];
+
+export const THEME_IDS: readonly ThemeId[] = [
+  ...BASE_THEME_IDS,
+  ...CATALOG_THEME_IDS,
+];
+
+/**
+ * Written as a union of the two lists rather than derived from `THEME_IDS`,
+ * because a spread into an array literal widens to `string[]` and would take
+ * the literal union with it. The union is the thing every `Record<ThemeId, _>`
+ * in the codebase relies on for its completeness check.
+ */
+export type ThemeId = BaseThemeId | CatalogThemeId;
 
 /**
  * The themes that can be bought today.

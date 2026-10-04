@@ -1,4 +1,5 @@
-import type { Locale, ThemeId } from "./types";
+import { CATALOG } from "@/catalog";
+import type { BaseThemeId, Locale, ThemeId } from "./types";
 
 /**
  * Every string the renderer can paint, in both locales.
@@ -30,6 +31,21 @@ export type Messages = {
   readonly themeName: Record<ThemeId, string>;
 };
 
+/**
+ * The catalogue's display names, in both columns.
+ *
+ * Read from the catalogue rather than typed again here, because a name typed
+ * in two places drifts in one of them, and the one that drifts is the one a
+ * guest reads. A style therefore names itself exactly once, in its own file.
+ */
+const CATALOG_NAMES_EN = Object.fromEntries(
+  Object.entries(CATALOG).map(([id, entry]) => [id, entry.copy.name]),
+) as Record<Exclude<ThemeId, BaseThemeId>, string>;
+
+const CATALOG_NAMES_DE = Object.fromEntries(
+  Object.entries(CATALOG).map(([id, entry]) => [id, entry.nameDe]),
+) as Record<Exclude<ThemeId, BaseThemeId>, string>;
+
 const EN: Messages = {
   kicker: "Together with their families",
   artefact: (a, b) => `Wedding invitation for ${a} and ${b}`,
@@ -51,6 +67,7 @@ const EN: Messages = {
     verdure: "Verdure",
     porcelain: "Porcelain",
     obsidian: "Obsidian",
+    ...CATALOG_NAMES_EN,
   },
 };
 
@@ -75,6 +92,7 @@ const DE: Messages = {
     verdure: "Verdure",
     porcelain: "Porcelain",
     obsidian: "Obsidian",
+    ...CATALOG_NAMES_DE,
   },
 };
 

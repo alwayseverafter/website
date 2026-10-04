@@ -93,16 +93,21 @@ describe("routing", () => {
 });
 
 describe("money", () => {
-  it("shows dollars in English and euros in German", () => {
-    expect(formatPrice("invitation", "en")).toContain("249");
-    expect(formatPrice("invitation", "en")).toContain("$");
-    expect(formatPrice("invitation", "de")).toContain("249");
+  /*
+   * Euro in both columns. The catalogue is priced against a European market
+   * and one product quoted at the same number in two currencies is two
+   * different prices. Only the placement of the symbol differs by locale.
+   */
+  it("shows euros in both locales", () => {
+    expect(formatPrice("invitation", "en")).toContain("125");
+    expect(formatPrice("invitation", "en")).toContain("€");
+    expect(formatPrice("invitation", "de")).toContain("125");
     expect(formatPrice("invitation", "de")).toContain("€");
   });
 
   it("drops the cents on a whole amount and keeps them otherwise", () => {
-    expect(formatMoney(24900, "en")).toBe("$249");
-    expect(formatMoney(24950, "en")).toBe("$249.50");
+    expect(formatMoney(12500, "en")).toBe("€125");
+    expect(formatMoney(12550, "en")).toBe("€125.50");
   });
 });
 

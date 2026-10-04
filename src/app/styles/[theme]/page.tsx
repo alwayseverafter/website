@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { InvitePreview } from "@/invite/InvitePreview";
 import type { ThemeId } from "@/invite/types";
 import {
-  PRICE,
   SITE_NAME,
   THEME_COPY,
   STYLE_COUNT_LOWER,
@@ -14,8 +13,11 @@ import {
   spelledCount,
   absoluteUrl,
   formatSampleDate,
+  isBuyable,
   isThemeId,
+  kindOf,
   otherThemes,
+  priceOf,
   sampleCouple,
   themePath,
 } from "@/lib/seo";
@@ -104,29 +106,44 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
   const copy = THEME_COPY[theme];
   const couple = sampleCouple(theme);
   const canonical = absoluteUrl(themePath(theme));
-  const funnelHref = `/?theme=${theme}&from=styles`;
+  const kind = kindOf(theme);
+  const buyable = isBuyable(theme);
+  const price = priceOf(theme);
+  const noun = kind === "save-the-date" ? "save the date" : "wedding invitation";
+
+  /*
+   * R3: a style the product cannot build yet must not send a visitor into the
+   * funnel with its name on the button, because the funnel would hand them a
+   * different style and nothing would say so. Until it is sellable, the CTA
+   * goes to the gallery and the page says why, in words, below.
+   */
+  const funnelHref = buyable ? `/?theme=${theme}&from=styles` : "/styles";
 
   /*
    * Product plus BreadcrumbList, in one array, which application/ld+json
-   * accepts. The Offer quotes The Invitation tier, because that is the price a
-   * visitor arriving on this page can actually pay for this style.
+   * accepts. The Offer quotes this style's own product price, and declares
+   * PreOrder rather than InStock when the style cannot be bought today —
+   * announcing an InStock offer for something with no checkout is the same
+   * lie as the button would be.
    */
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      name: `${copy.name} wedding invitation`,
+      name: `${copy.name} ${noun}`,
       description: copy.metaDescription,
       url: canonical,
-      category: "Wedding invitations",
+      category: kind === "save-the-date" ? "Save the dates" : "Wedding invitations",
       image: [absoluteUrl(`${themePath(theme)}/opengraph-image`)],
       brand: { "@type": "Brand", name: SITE_NAME },
       offers: {
         "@type": "Offer",
         url: absoluteUrl("/"),
-        price: PRICE.amount,
-        priceCurrency: PRICE.currency,
-        availability: "https://schema.org/InStock",
+        price: price.amount,
+        priceCurrency: price.currency,
+        availability: buyable
+          ? "https://schema.org/InStock"
+          : "https://schema.org/PreOrder",
         /* One flat price per wedding, unlimited guests. No per guest tier exists. */
         eligibleQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "wedding" },
       },
@@ -173,15 +190,30 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
         </div>
       </div>
       <p className={styles.caption}>
-        A complete {copy.name} invitation, set for {couple.a} and {couple.b},{" "}
+        A complete {copy.name} {noun}, set for {couple.a} and {couple.b},{" "}
         {formatSampleDate(couple.date)}
       </p>
 
       <div className={styles.ctaTop}>
         <Link href={funnelHref} className={styles.cta}>
-          See {copy.name} with your names
+          {buyable ? `See ${copy.name} with your names` : "See what you can send today"}
         </Link>
       </div>
+
+      {/*
+        R12: an unfinished thing announces itself. A style that is drawn, named
+        and priced but not yet buildable says so here, in the same words a
+        person would use, rather than letting a visitor discover it at the
+        payment step.
+      */}
+      {buyable ? null : (
+        <p className={styles.fine}>
+          {copy.name} is a finished design and not yet on sale. It is listed at{" "}
+          {price.currency} {price.amount} and will open for orders once the
+          renderer can build it. Everything in the gallery marked available can
+          be sent today.
+        </p>
+      )}
 
       <hr className="hair" />
 
@@ -221,14 +253,27 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
           <dt className={styles.specKey}>Guests</dt>
           <dd className={styles.specValue}>Unlimited, at one flat price for the wedding</dd>
         </div>
+        <div className={styles.specRow}>
+          <dt className={styles.specKey}>Price</dt>
+          <dd className={styles.specValue}>
+            {price.currency} {price.amount}, once, for the whole wedding
+          </dd>
+        </div>
+        <div className={styles.specRow}>
+          <dt className={styles.specKey}>Availability</dt>
+          <dd className={styles.specValue}>
+            {buyable ? "Available now" : "Listed, not yet open for orders"}
+          </dd>
+        </div>
       </dl>
 
       <hr className="hair" />
 
       {/*
         Rendered only when there is another style to link to. `otherThemes`
-        filters THEME_ORDER, so while one style is sellable this list is empty
-        and the heading would announce links that are not there.
+        returns siblings of the same kind, capped, so this list is empty while
+        a kind has only one published style and the heading would otherwise
+        announce links that are not there.
       */}
       {otherThemes(theme).length === 0 ? null : (
         <>
@@ -256,13 +301,16 @@ export default async function ThemePage({ params }: { params: Promise<RouteParam
       <hr className="hair" />
 
       <section className={styles.close}>
-        <h2 className={`display ${styles.h2}`}>Yours takes an hour</h2>
+        <h2 className={`display ${styles.h2}`}>
+          {buyable ? "Yours takes an hour" : "Where to start instead"}
+        </h2>
         <p className="lede">
-          Type your two names and your date. {copy.name} re-renders as your invitation,
-          on the spot, with no account and no email. Send one link to everyone you love.
+          {buyable
+            ? `Type your two names and your date. ${copy.name} re-renders as your ${noun}, on the spot, with no account and no email. Send one link to everyone you love.`
+            : `${copy.name} is not open for orders yet. The styles that are take two names and a date, re-render on the spot, and send as one link to everyone you love.`}
         </p>
         <Link href={funnelHref} className={styles.cta}>
-          Start with {copy.name}
+          {buyable ? `Start with ${copy.name}` : "See the gallery"}
         </Link>
         <p className={styles.fine}>Priced once, not per guest.</p>
       </section>

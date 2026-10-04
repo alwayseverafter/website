@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { InvitePreview } from "@/invite/InvitePreview";
+import type { ThemeKind } from "@/catalog/types";
 import {
   absoluteUrl,
+  isBuyable,
   SITE_NAME,
   STYLE_COUNT,
   STYLE_NOUN,
@@ -11,6 +13,7 @@ import {
   THEME_ORDER,
   sampleCouple,
   themePath,
+  themesOfKind,
 } from "@/lib/seo";
 import styles from "./styles.module.css";
 
@@ -46,6 +49,28 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
   },
 };
+
+/**
+ * The two products, in the order a couple buys them: the save the date goes
+ * out a year ahead, the invitation three months before. A gallery that leads
+ * with the invitation is ordered by our revenue rather than their calendar.
+ */
+const SECTIONS: readonly { kind: ThemeKind; heading: string; lede: string }[] = [
+  {
+    kind: "save-the-date",
+    heading: "Save the dates",
+    lede:
+      "Sent a year out, when all you have is a date and a feeling. One screen,"
+      + " a countdown, and the two names.",
+  },
+  {
+    kind: "invitation",
+    heading: "Invitations",
+    lede:
+      "The full invitation: the ceremony, the reception, the practical lines"
+      + " every guest asks about, and the names at the top of it.",
+  },
+];
 
 export default function StylesPage() {
   /*
@@ -99,29 +124,46 @@ export default function StylesPage() {
         </p>
       </section>
 
-      <ul className={styles.grid}>
-        {THEME_ORDER.map((theme) => {
-          const copy = THEME_COPY[theme];
-          return (
-            <li key={theme}>
-              <Link href={themePath(theme)} className={styles.card}>
-                <span className={styles.frame}>
-                  <InvitePreview
-                    couple={sampleCouple(theme)}
-                    opener={copy.opener}
-                    locale="en"
-                    fit="thumb"
-                    arrived
-                  />
-                </span>
-                <h2 className={styles.cardName}>{copy.name}</h2>
-                <span className={styles.cardLine}>{copy.summary}</span>
-                <span className={styles.cardMeta}>{copy.openerName}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {/*
+        One grid per product. A save the date and an invitation are bought at
+        different moments for different money, so mixing them into one wall of
+        cards makes a visitor sort them by eye. The headings do that work.
+      */}
+      {SECTIONS.map(({ kind, heading, lede }) => {
+        const themes = themesOfKind(kind);
+        if (themes.length === 0) return null;
+        return (
+          <section key={kind} className={styles.group}>
+            <h2 className={`display ${styles.h2}`}>{heading}</h2>
+            <p className="lede">{lede}</p>
+            <ul className={styles.grid}>
+              {themes.map((theme) => {
+                const copy = THEME_COPY[theme];
+                return (
+                  <li key={theme}>
+                    <Link href={themePath(theme)} className={styles.card}>
+                      <span className={styles.frame}>
+                        <InvitePreview
+                          couple={sampleCouple(theme)}
+                          opener={copy.opener}
+                          locale="en"
+                          fit="thumb"
+                          arrived
+                        />
+                      </span>
+                      <h3 className={styles.cardName}>{copy.name}</h3>
+                      <span className={styles.cardLine}>{copy.summary}</span>
+                      <span className={styles.cardMeta}>
+                        {isBuyable(theme) ? copy.openerName : "Not yet on sale"}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
 
       <hr className="hair" />
 

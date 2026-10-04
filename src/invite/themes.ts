@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
-import { THEME_IDS, type ThemeId } from "./types";
+import { CATALOG } from "@/catalog";
+import { THEME_IDS, type BaseThemeId, type ThemeId } from "./types";
 
 /**
  * A theme is a token bundle, not a template.
@@ -134,7 +135,7 @@ export const FONT_STACKS: Record<
  * so a new id in `THEME_IDS` is a compile error here rather than a blank
  * invitation at runtime.
  */
-export const THEMES: Record<ThemeId, Theme> = {
+const BASE_THEMES: Record<BaseThemeId, Theme> = {
   /**
    * The flagship. Paper white, editorial, open chrome: no ornament, no metal,
    * no boxes. The accent is ink rather than gold, so nothing on the page
@@ -308,6 +309,24 @@ export const THEMES: Record<ThemeId, Theme> = {
     },
   },
 };
+
+/**
+ * The catalogue's token bundles, with their ids put back.
+ *
+ * `CATALOG` is a `Record<CatalogThemeId, CatalogEntry>`, so the set is already
+ * proven complete by the compiler. The cast asserts only that mapping over its
+ * entries preserves its keys, which it does; it is not a completeness claim.
+ */
+const CATALOG_THEMES = Object.fromEntries(
+  Object.entries(CATALOG).map(([id, entry]) => [id, { ...entry.theme, id }]),
+) as Record<Exclude<ThemeId, BaseThemeId>, Theme>;
+
+/**
+ * Every theme the renderer can paint: the eight it shipped with, plus the
+ * catalogue. Still keyed on the literal union, so `THEMES[id]` is a `Theme`
+ * rather than `Theme | undefined` under `noUncheckedIndexedAccess`.
+ */
+export const THEMES: Record<ThemeId, Theme> = { ...BASE_THEMES, ...CATALOG_THEMES };
 
 /** Ordered by `THEME_IDS`, so the picker's order is the contract's order. */
 export const THEME_LIST: readonly Theme[] = THEME_IDS.map((id) => THEMES[id]);
