@@ -1,0 +1,49 @@
+/* R2: a CSS Module. The funnel's only standing navigation. */
+
+.foot {
+  border-top: var(--hair);
+  padding-block: 2rem 2.5rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  /* Column gap only. The 44px targets supply the vertical rhythm. R9. */
+  column-gap: 1.5rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-family: var(--f-ui);
+  font-size: 0.72rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--ink-2);
+  transition: color var(--t);
+}
+
+/* The way into the catalogue is the one link here that is not housekeeping. */
+.first {
+  color: var(--ink);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}
+
+@media print {
+  .foot {
+    padding-block: 1rem;
+  }
+}

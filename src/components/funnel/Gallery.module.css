@@ -1,0 +1,82 @@
+/*
+ * R2: a CSS Module, so nothing here can reach another section.
+ *
+ * No viewport units, for the reason Turn.module.css gives: a section that
+ * avoids them can be lifted into a narrower frame later without B2 returning.
+ */
+
+.gallery {
+  padding-block: 3rem 3.5rem;
+  border-top: var(--hair);
+}
+
+.kicker {
+  margin-bottom: 1.25rem;
+}
+
+.h {
+  font-size: 2.1rem;
+  max-width: 15ch;
+  text-wrap: balance;
+}
+
+.lede {
+  margin-top: 1.25rem;
+}
+
+/*
+ * The one link out of the funnel before The Close.
+ *
+ * A rule under a word, not a filled button: a second button on the way to the
+ * only button would read as a second offer. Matches the gallery's own CTA, so
+ * a visitor arriving at /styles meets the control they just pressed.
+ */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: 1.75rem;
+  padding-block: 0.25rem;
+  font-family: var(--f-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  /* Tracking pushes the optical centre right; indent pulls it back. */
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: var(--hair);
+  border-bottom-color: var(--ink);
+  transition: color var(--t), border-color var(--t);
+}
+
+@media (hover: hover) {
+  .cta:hover {
+    color: var(--ink-2);
+    border-bottom-color: var(--ink-3);
+  }
+}
+
+@media (min-width: 48rem) {
+  .gallery {
+    padding-block: 4rem 5rem;
+  }
+
+  .h {
+    font-size: 3.4rem;
+    max-width: 18ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transition: none;
+  }
+}
+
+/* R10. One variant, and print covers it: the link is a URL on paper. */
+@media print {
+  .gallery {
+    padding-block: 1rem;
+  }
+}

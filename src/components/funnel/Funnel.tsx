@@ -10,10 +10,12 @@ import { Door } from "./Door";
 import { Arrival } from "./Arrival";
 import { Turn } from "./Turn";
 import { Mirror } from "./Mirror";
+import { Gallery } from "./Gallery";
 import { Machine } from "./Machine";
 import { Voices } from "./Voices";
 import { Choice } from "./Choice";
 import { Close } from "./Close";
+import { Foot } from "./Foot";
 
 /**
  * The funnel, assembled. Its order is the argument:
@@ -22,10 +24,12 @@ import { Close } from "./Close";
  *   Arrival  the product sells itself, wordlessly
  *   Turn     break the fourth wall
  *   Mirror   their names, no signup. The conversion engine.
+ *   Gallery  the one link out: the rest of the catalogue, at /styles
  *   Machine  answer the practical objection before it is voiced
  *   Voices   other couples answer the doubts the page cannot answer itself
  *   Choice   two tiers, no meter
  *   Close    one button
+ *   Foot     the standing nav, below the button and never above it
  *
  * Locale lives here because it is the one piece of state more than one section
  * needs, and because Door renders its EN / DE pair only when a real handler is
@@ -65,7 +69,19 @@ function isPreselectable(v: string | null): v is SellableThemeId {
   return v !== null && isSellableTheme(v);
 }
 
-export function Funnel() {
+export type FunnelProps = {
+  /**
+   * How many styles the gallery lists, already spelled, for The Catalogue.
+   *
+   * Handed down from `page.tsx` rather than read here. `@/lib/seo` reaches
+   * `@/catalog`, which is forty-six modules of editorial copy, and importing
+   * it inside this client boundary would ship all of them to the browser to
+   * render one number.
+   */
+  styleCount: string;
+};
+
+export function Funnel({ styleCount }: FunnelProps) {
   const locale = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const { update } = useCouple();
 
@@ -110,10 +126,12 @@ export function Funnel() {
       <Arrival locale={locale} />
       <Turn locale={locale} />
       <Mirror locale={locale} />
+      <Gallery locale={locale} count={styleCount} />
       <Machine locale={locale} />
       <Voices locale={locale} />
       <Choice locale={locale} />
       <Close locale={locale} />
+      <Foot locale={locale} />
     </>
   );
 }
