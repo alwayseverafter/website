@@ -1,56 +1,71 @@
 import type { CatalogEntry } from "@/catalog/types";
 
 /**
- * Dentelle — PLACEHOLDER.
+ * Dentelle.
  *
- * R12: `draft` is true, so this style is kept out of the gallery, the sitemap
- * and the router until it is written. `catalog.test.ts` names every draft that
- * is still outstanding. Fill this in per docs/CATALOG-BUILD-INSTRUCTIONS.md and
- * set `draft` to false in the same edit.
+ * The editorial lace: the sharpest of the three, and the only one with a
+ * seal. Italiana in tracked capitals against one saturated wax red is what
+ * separates it from Voile, which is the same material played soft.
  */
 export const entry: CatalogEntry = {
   id: "std-dentelle",
   kind: "save-the-date",
-  draft: true,
+  draft: false,
   theme: {
     dark: false,
-    fonts: "classic",
-    ornament: "none",
-    surface: "none",
-    motion: "fade-rise",
-    lettering: "titlecase",
-    chrome: "open",
+    fonts: "editorial",
+    ornament: "diamond",
+    surface: "linen",
+    motion: "veil",
+    lettering: "tracked-caps",
+    chrome: "framed",
     palette: {
-      bg: "#FFFFFF",
+      bg: "#F4F1EA",
       surface: "#FFFFFF",
-      ink: "#000000",
-      muted: "#666666",
-      accent: "#000000",
-      accentSoft: "#EEEEEE",
-      rule: "#CCCCCC",
-      onAccent: "#FFFFFF",
+      ink: "#241F1C",
+      muted: "#7C756C",
+      accent: "#7E2B2B",
+      accentSoft: "#EADFD8",
+      rule: "#CFC5B6",
+      onAccent: "#FFF8F5",
     },
   },
   copy: {
     name: "Dentelle",
-    summary: "Placeholder.",
-    metaTitle: "Dentelle",
-    metaDescription: "Placeholder.",
+    summary: "Ivory linen, tracked capitals, and one wax red seal holding it shut.",
+    metaTitle: "Dentelle: a wax seal save the date as a link",
+    metaDescription: "An editorial digital save the date on ivory linen, tracked capitals and one wax red seal. See the whole sample, then put your own date on it today.",
     palette: {
-      paper: "#FFFFFF",
-      ink: "#000000",
-      muted: "#666666",
-      rule: "#CCCCCC",
-      accent: "#000000",
+      paper: "#F4F1EA",
+      ink: "#241F1C",
+      muted: "#7C756C",
+      rule: "#CFC5B6",
+      accent: "#7E2B2B",
     },
-    opener: "direct",
-    openerName: "Direct",
-    sample: { a: "Placeholder", b: "Placeholder", date: "2027-01-01" },
-    spec: { paper: "Placeholder", ink: "Placeholder", faces: "Placeholder" },
-    whatItIs: ["Placeholder."],
-    whoItSuits: ["Placeholder."],
-    typography: ["Placeholder."],
-    howItOpens: ["Placeholder."],
+    opener: "envelope",
+    openerName: "The envelope",
+    sample: { a: "Nadia", b: "Kasper", date: "2028-07-05" },
+    spec: {
+      paper: "Ivory linen",
+      ink: "Near black, warm",
+      faces: "Italiana, Jost",
+    },
+    whatItIs: [
+      "Dentelle is the editorial one. Ivory linen ground, names in tracked capitals, a framed sheet, and a single wax red diamond where a seal would sit on a physical card.",
+      "The red is the only saturated colour and it appears once. Everything else is ink, ground and a hairline, which is what keeps a framed layout from reading as a form rather than as stationery.",
+    ],
+    whoItSuits: [
+      "A couple who want the save the date to look like print rather than like a message, and a wedding whose invitation will be formal when it follows.",
+      "It carries a long guest list well, because tracked capitals stay legible at the small sizes a forwarded screenshot ends up being read at.",
+    ],
+    typography: [
+      "Italiana for the names, a high contrast display face whose thin strokes read like an engraved plate, set here in capitals and tracked wide so the hairlines have air around them.",
+      "Jost takes the date and the countdown, small and in the warm grey. Two faces, three sizes, one weight of rule, and one spot of red.",
+    ],
+    howItOpens: [
+      "The envelope. A folded sheet unseals and opens outward, and the framed save the date is inside it, which is the gesture the wax seal is promising.",
+      "It runs a little under two seconds. On a phone set to reduce motion the envelope does not animate and the save the date is simply already unfolded.",
+    ],
   },
   nameDe: "Dentelle",
 };
