@@ -81,6 +81,22 @@
   color: var(--ink-3);
 }
 
+/* ── one product per group ──────────────────────────────────────────── */
+
+/*
+ * Separation is space and a heading, not a box. The gallery carries two
+ * products and a visitor needs to know which one they are looking at; a
+ * border around the whole group is what makes a page read as a web form
+ * rather than as print.
+ */
+.group {
+  margin-block-start: 4.5rem;
+}
+
+.group:first-of-type {
+  margin-block-start: 3rem;
+}
+
 /* ── the grid ───────────────────────────────────────────────────────── */
 
 .grid {

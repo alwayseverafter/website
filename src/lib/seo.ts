@@ -1,5 +1,10 @@
-import type { Couple, OpenerId, ThemeId } from "@/invite/types";
-import { isSellableTheme, THEME_IDS } from "@/invite/types";
+import { CATALOG, PUBLISHED_ENTRIES } from "@/catalog";
+import type { ThemeCopy, ThemeKind, ThemePalette } from "@/catalog/types";
+import type { Couple, ThemeId } from "@/invite/types";
+import type { BaseThemeId } from "@/invite/types";
+import { BASE_THEME_IDS, isSellableTheme, THEME_IDS } from "@/invite/types";
+
+export type { ThemeCopy, ThemeKind, ThemePalette };
 
 /**
  * Shared metadata and the editorial content behind /styles.
@@ -20,8 +25,20 @@ export const SITE_NAME = "Always Ever After";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-/** The Invitation tier. Quoted in Product structured data on every style page. */
-export const PRICE = { amount: "249.00", currency: "USD" } as const;
+/**
+ * What each product costs, written the way Product structured data wants it.
+ *
+ * A decimal string rather than a number, because `schema.org/price` is a text
+ * field and a float would render "125" as "125" in one place and "125.00" in
+ * another. The minor-unit integer the checkout uses lives in `lib/i18n`; these
+ * two must agree and `catalog.test.ts` is what makes them.
+ *
+ * ⚠ Shown, not charged. See the warning on `PRICES` in `lib/i18n/index.ts`.
+ */
+export const PRICE: Record<ThemeKind, { amount: string; currency: string }> = {
+  invitation: { amount: "125.00", currency: "EUR" },
+  "save-the-date": { amount: "25.00", currency: "EUR" },
+};
 
 export function absoluteUrl(path: string): string {
   return new URL(path, SITE_URL).toString();
@@ -32,55 +49,7 @@ export function themePath(theme: ThemeId): string {
   return `/styles/${theme}`;
 }
 
-/**
- * The colours a style page and its share image are drawn in.
- *
- * These are not the funnel's tokens. The chrome is Atelier and carries no
- * accent of its own; these values belong to the invitation being shown, and
- * they exist here only because an ImageResponse runs outside the document and
- * therefore cannot read a CSS custom property.
- */
-export type ThemePalette = {
-  /** Ground of the invitation itself. */
-  paper: string;
-  /** Text on that ground. */
-  ink: string;
-  /** One step back from ink. Kickers and meta. */
-  muted: string;
-  /** The single hairline weight, in this theme's colour. */
-  rule: string;
-  /** The one colour the theme is actually about. Used sparingly. */
-  accent: string;
-};
-
-export type ThemeCopy = {
-  /** Display name. Title case, no article. */
-  name: string;
-  /** One declarative line. Gallery caption and page lede. */
-  summary: string;
-  /** Under 60 characters of it lands in a SERP, so the style name comes first. */
-  metaTitle: string;
-  metaDescription: string;
-  palette: ThemePalette;
-  /** Which of the four openers this style ships with. */
-  opener: OpenerId;
-  /** Human name of that opener, for the spec list. */
-  openerName: string;
-  /**
-   * The couple on the sample. Distinct per style, because eight pages showing
-   * the same two names read as eight copies of one page, to a reader and to a
-   * crawler alike.
-   */
-  sample: Omit<Couple, "theme">;
-  /** Spec list. Facts get words, never icons. */
-  spec: { paper: string; ink: string; faces: string };
-  whatItIs: readonly string[];
-  whoItSuits: readonly string[];
-  typography: readonly string[];
-  howItOpens: readonly string[];
-};
-
-export const THEME_COPY: Record<ThemeId, ThemeCopy> = {
+const BASE_THEME_COPY: Record<BaseThemeId, ThemeCopy> = {
   "atelier-blanc": {
     name: "Atelier Blanc",
     summary: "Paper white, one hairline, and a great deal of deliberately empty space.",
@@ -395,15 +364,80 @@ export const THEME_COPY: Record<ThemeId, ThemeCopy> = {
 };
 
 /**
- * Gallery and sitemap order. Kept as one list so it cannot drift.
+ * Every style's copy: the base eight, then the catalogue.
  *
- * Sellable themes only. The gallery, the eight style pages, their share images
- * and the sitemap all read this, so restricting it here is what keeps the site
- * from ranking, and selling, a style the product cannot build. This is a real
- * SEO cost, accepted knowingly: one honest page beats eight that sell a thing
- * that cannot be delivered. See `SELLABLE_THEME_IDS`.
+ * Drafts are merged in too, so `Record<ThemeId, ThemeCopy>` is honestly total
+ * and `THEME_COPY[id]` is never `undefined` behind a type that says otherwise.
+ * What keeps a draft off the site is `THEME_ORDER`, below, not a hole here.
  */
-export const THEME_ORDER: readonly ThemeId[] = THEME_IDS.filter(isSellableTheme);
+const CATALOG_COPY = Object.fromEntries(
+  Object.entries(CATALOG).map(([id, entry]) => [id, entry.copy]),
+) as Record<Exclude<ThemeId, BaseThemeId>, ThemeCopy>;
+
+export const THEME_COPY: Record<ThemeId, ThemeCopy> = {
+  ...BASE_THEME_COPY,
+  ...CATALOG_COPY,
+};
+
+/**
+ * Which product each style belongs to.
+ *
+ * The original eight predate the catalogue and are all invitations. Stated
+ * rather than defaulted, so a save the date added to that list later is a
+ * compile error here instead of a save the date quoted at the invitation
+ * price.
+ */
+const BASE_KIND = Object.fromEntries(
+  BASE_THEME_IDS.map((id) => [id, "invitation" as ThemeKind]),
+) as Record<BaseThemeId, ThemeKind>;
+
+const CATALOG_KIND = Object.fromEntries(
+  Object.entries(CATALOG).map(([id, entry]) => [id, entry.kind]),
+) as Record<Exclude<ThemeId, BaseThemeId>, ThemeKind>;
+
+export const THEME_KIND: Record<ThemeId, ThemeKind> = {
+  ...BASE_KIND,
+  ...CATALOG_KIND,
+};
+
+export function kindOf(theme: ThemeId): ThemeKind {
+  return THEME_KIND[theme];
+}
+
+/** What this style costs, in the shape structured data wants. */
+export function priceOf(theme: ThemeId): { amount: string; currency: string } {
+  return PRICE[kindOf(theme)];
+}
+
+/**
+ * Whether a visitor can buy this style today.
+ *
+ * The catalogue is browsable in full and sellable in part. A style the product
+ * cannot yet build is shown, described and priced, and says plainly on its own
+ * page that it cannot be bought yet. What it never does is take the money and
+ * fail at delivery, which is R3 with a receipt attached.
+ */
+export function isBuyable(theme: ThemeId): boolean {
+  return isSellableTheme(theme);
+}
+
+/**
+ * Gallery and sitemap order: the sellable originals, then the catalogue.
+ *
+ * Drafts are absent, so an unwritten style has no URL rather than a URL full
+ * of the word "Placeholder". The seven original styles that are neither
+ * sellable nor draft stay out, exactly as before this catalogue existed;
+ * widening that is a separate decision from adding these.
+ */
+export const THEME_ORDER: readonly ThemeId[] = [
+  ...BASE_THEME_IDS.filter(isSellableTheme),
+  ...PUBLISHED_ENTRIES.map((entry) => entry.id),
+];
+
+/** The published styles of one kind, in gallery order. */
+export function themesOfKind(kind: ThemeKind): readonly ThemeId[] {
+  return THEME_ORDER.filter((theme) => kindOf(theme) === kind);
+}
 
 /**
  * The count of sellable styles, spelled, because this brand writes numbers as
@@ -441,9 +475,20 @@ export function isThemeId(value: string): value is ThemeId {
   return (THEME_IDS as readonly string[]).includes(value);
 }
 
-/** Every style except this one, for the cross links at the foot of a style page. */
+/**
+ * The cross links at the foot of a style page.
+ *
+ * Siblings of the same kind only, and at most six. A save the date is not an
+ * alternative to an invitation, and a list of forty-six links at the foot of
+ * every page is a footer sitemap: it dilutes each link it carries and reads,
+ * to a crawler, as the same block repeated forty-seven times.
+ */
+const MAX_CROSS_LINKS = 6;
+
 export function otherThemes(theme: ThemeId): readonly ThemeId[] {
-  return THEME_ORDER.filter((t) => t !== theme);
+  return themesOfKind(kindOf(theme))
+    .filter((t) => t !== theme)
+    .slice(0, MAX_CROSS_LINKS);
 }
 
 /** The sample couple in the shape the renderer wants. */

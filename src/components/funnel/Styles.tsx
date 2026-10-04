@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { InvitePreview } from "@/invite/InvitePreview";
-import { THEME_IDS, type Couple, type Locale, type ThemeId } from "@/invite/types";
+import { BASE_THEME_IDS, type BaseThemeId, type Couple, type Locale } from "@/invite/types";
 import { SAMPLE, useCouple } from "@/lib/couple";
 import { track } from "@/lib/analytics";
 import styles from "./Styles.module.css";
@@ -20,11 +20,16 @@ import styles from "./Styles.module.css";
  */
 
 /**
- * Written out rather than derived from the id, so adding a theme to `THEME_IDS`
- * is a type error here rather than a card silently labelled "new theme 2".
- * These are proper nouns and do not translate.
+ * Written out rather than derived from the id, so adding a theme to
+ * `BASE_THEME_IDS` is a type error here rather than a card silently labelled
+ * "new theme 2". These are proper nouns and do not translate.
+ *
+ * The picker carries the original eight, not the catalogue. Every card here is
+ * a live render of the visitor's own names, so this list is bounded by what a
+ * phone can paint in one scroll rather than by how many styles exist. The
+ * catalogue is browsed at /styles, where the renders are static.
  */
-const THEME_NAMES: Record<ThemeId, string> = {
+const THEME_NAMES: Record<BaseThemeId, string> = {
   "atelier-blanc": "Atelier Blanc",
   vicioso: "Vicioso",
   noir: "Noir",
@@ -103,7 +108,7 @@ export function Styles({ locale = "en" }: { locale?: Locale }) {
     if (Math.abs(delta) > 1) box.scrollLeft += delta;
   }, [couple.theme]);
 
-  function onSelect(theme: ThemeId) {
+  function onSelect(theme: BaseThemeId) {
     update({ theme });
     track({ name: "style_selected", theme });
   }
@@ -129,7 +134,7 @@ export function Styles({ locale = "en" }: { locale?: Locale }) {
           <legend className={styles.srOnly}>{copy.legend}</legend>
 
           <div className={styles.scroller} ref={scroller}>
-            {THEME_IDS.map((theme) => {
+            {BASE_THEME_IDS.map((theme) => {
               const selected = couple.theme === theme;
               const preview: Couple = { a: shownA, b: shownB, date: couple.date, theme };
 

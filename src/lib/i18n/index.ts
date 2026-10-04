@@ -65,8 +65,17 @@ export function parseLocale(value: string | null | undefined): Locale | null {
 
 /* ── money ───────────────────────────────────────────────────────────── */
 
+/**
+ * The euro in both columns.
+ *
+ * The catalogue is priced in euro against a European market, and one product
+ * quoted in two currencies at the same number is two different prices. Until
+ * there is a conversion worth maintaining, both locales read the same figure
+ * in the same currency and the English column simply writes it the English
+ * way.
+ */
 export const CURRENCY: Record<Locale, string> = {
-  en: "USD",
+  en: "EUR",
   de: "EUR",
 };
 
@@ -74,17 +83,22 @@ export const CURRENCY: Record<Locale, string> = {
  * Prices in minor units, the way Stripe holds them, so the number here and the
  * number in the Stripe dashboard are the same number.
  *
- * The euro figures are parity with the dollar ones rather than a conversion.
- * That is a business decision and it is provisional: it depends on the selling
- * entity, and on German price indication law, which requires a consumer price
- * to be shown including VAT. See the open questions in the design spec.
+ * Both locales are euro, so both columns hold the same figure. The two rows
+ * are kept rather than collapsed because a per-market price is a decision that
+ * will be taken, and the shape should not have to be rediscovered then.
  *
  * Written here once. Never written into a sentence in a catalogue, because a
- * hardcoded "$249" in a German paragraph is a bug that typechecks.
+ * hardcoded "EUR 125" in a German paragraph is a bug that typechecks.
+ *
+ * ⚠ These figures are what a visitor is SHOWN. What a visitor is CHARGED is
+ * the amount on the Stripe Price named by `NEXT_PUBLIC_STRIPE_PRICE_*`, which
+ * this repository cannot read. Moving a number here without moving the Stripe
+ * Price makes the page and the receipt disagree. See the pre-merge checklist
+ * in docs/CATALOG-BUILD-INSTRUCTIONS.md.
  */
 const PRICES: Record<Locale, Record<Tier, number>> = {
-  en: { invitation: 24900, commission: 59900 },
-  de: { invitation: 24900, commission: 59900 },
+  en: { invitation: 12500, commission: 59900 },
+  de: { invitation: 12500, commission: 59900 },
 };
 
 /** Formats minor units as money in the locale's own currency. */
