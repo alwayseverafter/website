@@ -60,8 +60,8 @@ const terms: LegalDocument = {
     {
       heading: "Payment",
       body: [
-        "Payment is taken by Stripe, our payment processor. Your card details go to Stripe and never to us.",
-        "Prices are shown in US dollars on the English site and in euros on the German site. Sales tax or value added tax is applied as the law of your country requires, and the amount you will be charged is shown in full before you confirm.",
+        "No payment is taken on this site. You tell us what you want, we write back with a price, and we agree it with you before any money changes hands.",
+        "Sales tax or value added tax is applied as the law of your country requires, and the amount is shown in full before you agree to it.",
       ],
     },
     {
@@ -163,7 +163,6 @@ const privacy: LegalDocument = {
       heading: "Cookies",
       body: [
         "This site sets no cookies. There is no cookie banner because there is nothing to ask you about.",
-        "Stripe's checkout runs on Stripe's own pages and sets cookies there. Stripe's privacy notice covers those.",
       ],
     },
     {
@@ -181,11 +180,11 @@ const privacy: LegalDocument = {
       ],
     },
     {
-      heading: "When you buy",
+      heading: "When you write to us",
       body: [
-        "Checkout is Stripe's hosted page. You give Stripe your email address and your payment details.",
-        "Stripe tells us that the payment succeeded, gives us your email address and the amount, and we send it the names, the date and the design you chose here, so that your invitation can be built and the link emailed to you.",
-        "Stripe processes payment data as an independent controller under its own privacy notice, and in the United States as well as in the EU. Its transfers rest on the European Commission's standard contractual clauses.",
+        "The form asks for your email address. It also sends whatever the preview on this page already holds: the two names, the date and the style you chose. Nothing else, and no payment details, because no payment is taken here.",
+        "That record is stored in our database, hosted by Supabase, and an alert is emailed to us through Resend so that a person knows to answer you. Both act on our instructions only.",
+        "Both providers process data in the United States as well as in the EU. Those transfers rest on the European Commission's standard contractual clauses.",
       ],
     },
     {

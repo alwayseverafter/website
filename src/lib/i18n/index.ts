@@ -71,8 +71,8 @@ export const CURRENCY: Record<Locale, string> = {
 };
 
 /**
- * Prices in minor units, the way Stripe holds them, so the number here and the
- * number in the Stripe dashboard are the same number.
+ * Prices in minor units, so a price is never a float and never a formatted
+ * string. Nothing here is charged automatically; a price is agreed by email.
  *
  * The euro figures are parity with the dollar ones rather than a conversion.
  * That is a business decision and it is provisional: it depends on the selling

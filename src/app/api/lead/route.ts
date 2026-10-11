@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { recordLead } from "@/lib/db";
+import { sendOrderAlert } from "@/lib/delivery";
 import { clientIp, hashIp } from "@/lib/iphash";
 
 /**
  * A couple who asked to be written to without buying.
  *
  * Two sections reach this. The Mirror asks once the invitation carries their
- * names, for the preview by email. The Close asks while Stripe is unconfigured,
- * where there is a tier chosen and no way to pay for it, and sends that tier
- * along; see `src/components/funnel/Close.tsx`.
+ * names, for the preview by email. The Close asks at the end of the funnel,
+ * where a tier has been chosen, and sends that tier along; see
+ * `src/components/funnel/Close.tsx`.
  *
  * Writes straight to the database. An earlier version forwarded this to the
  * product so that this site would not hold a database key, but the product is
@@ -95,6 +96,27 @@ export async function POST(request: Request): Promise<NextResponse> {
     console.error("[lead] not stored", stored.detail);
     return fail(502, "store_failed", "That did not save. Try again in a moment.");
   }
+
+  /*
+   * Tell us about it. Awaited rather than left dangling, because a serverless
+   * invocation can be frozen the moment it responds and an unawaited fetch is
+   * an alert that sometimes never leaves.
+   *
+   * A failure here is logged and not reported: the enquiry is already stored,
+   * and telling a couple who filled the form correctly that something broke
+   * would be a lie about their own submission. R3 — loud in the log, with the
+   * address, so a missed alert is recoverable from the database.
+   */
+  const alerted = await sendOrderAlert({
+    email,
+    partnerAName: partnerA,
+    partnerBName: partnerB,
+    weddingDate: weddingDate ?? null,
+    theme: theme ?? "",
+    tier: tier ?? null,
+    locale,
+  });
+  if (!alerted.ok) console.error("[lead] stored but not alerted:", email, alerted.error);
 
   return NextResponse.json({ ok: true });
 }

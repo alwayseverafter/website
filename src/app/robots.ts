@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/preview", "/create"],
+      disallow: ["/preview"],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
     host: SITE_URL,
