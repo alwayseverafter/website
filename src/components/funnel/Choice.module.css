@@ -33,19 +33,6 @@
   max-width: 30ch;
 }
 
-/* A notice, not a price. Shown only when a locale has no confirmed amounts. */
-.notice {
-  font-family: var(--f-body);
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: var(--ink-2);
-  border-top: var(--hair);
-  border-bottom: var(--hair);
-  padding-block: 1.25rem;
-  margin: 0;
-  max-width: 36ch;
-}
-
 /* Fieldset resets. `min-inline-size: 0` stops its legacy intrinsic minimum. */
 .group {
   border: 0;
