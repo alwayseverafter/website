@@ -164,7 +164,20 @@ export async function sendOrderAlert(args: OrderAlert): Promise<{ ok: boolean; e
         text: alertBody(args),
       }),
     });
-    if (!res.ok) return { ok: false, error: `resend_${res.status}` };
+    if (!res.ok) {
+      /*
+       * Resend's own words, not just its number. A bare 403 sends whoever is
+       * reading the log to the API key, when the cause is almost always the
+       * sending domain: an unverified `DELIVERY_FROM`, or the test sender
+       * refusing a recipient that is not the account's own address. The body
+       * says which, and a status alone costs an afternoon to rediscover.
+       */
+      const detail = await res.text().catch(() => "");
+      return {
+        ok: false,
+        error: `resend_${res.status}${detail ? `: ${detail.slice(0, 300)}` : ""}`,
+      };
+    }
     return { ok: true };
   } catch {
     return { ok: false, error: "network" };

@@ -77,10 +77,30 @@ describe("sendOrderAlert", () => {
     expect(body.text).toContain("linen");
   });
 
-  it("reports a refusal from Resend rather than swallowing it", async () => {
+  it("reports a refusal from Resend in Resend's own words", async () => {
     configure();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 422 }));
-    expect(await sendOrderAlert(ORDER)).toEqual({ ok: false, error: "resend_422" });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: async () => '{"message":"The alwayseverafter.com domain is not verified."}',
+    }));
+
+    const result = await sendOrderAlert(ORDER);
+
+    expect(result.ok).toBe(false);
+    // The status alone sends a reader to the API key. The body names the cause.
+    expect(result.error).toContain("resend_403");
+    expect(result.error).toContain("not verified");
+  });
+
+  it("still reports the status when the body cannot be read", async () => {
+    configure();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      text: async () => { throw new Error("stream already consumed"); },
+    }));
+    expect(await sendOrderAlert(ORDER)).toEqual({ ok: false, error: "resend_429" });
   });
 
   it("survives the network being down", async () => {
