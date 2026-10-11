@@ -97,8 +97,6 @@ type SectionCopy = {
   /** The visible state word on a card. Not read by assistive technology. */
   chosen: string;
   choose: string;
-  /** R12. Shown instead of the tiers while this locale has no confirmed price. */
-  unpriced: string;
 };
 
 const SECTION_COPY: Record<Locale, SectionCopy> = {
@@ -109,7 +107,6 @@ const SECTION_COPY: Record<Locale, SectionCopy> = {
     legend: "Choose how your invitation is made",
     chosen: "Chosen",
     choose: "Choose",
-    unpriced: "Pricing for this language is not confirmed yet, so it is not shown.",
   },
   de: {
     kicker: "Preis",
@@ -118,43 +115,8 @@ const SECTION_COPY: Record<Locale, SectionCopy> = {
     legend: "Wählt, wie eure Einladung entsteht",
     chosen: "Gewählt",
     choose: "Wählen",
-    unpriced:
-      "Die Preise für diese Sprache stehen noch nicht fest, deshalb werden sie hier nicht gezeigt.",
   },
 };
-
-type Money = { currency: string; amount: number };
-
-/**
- * Prices are held as numbers and formatted at render, never written as "$249".
- * A hardcoded string cannot become euros, and German is a real locale here
- * rather than a translation layer.
- *
- * Only the locales whose prices are confirmed appear. A missing locale renders
- * a visible notice instead of a plausible wrong number, because a price is the
- * one thing on this page that must not be guessed. LESSONS.md R12.
- */
-const PRICING: Partial<Record<Locale, Record<Tier, Money>>> = {
-  en: {
-    invitation: { currency: "USD", amount: 249 },
-    commission: { currency: "USD", amount: 599 },
-  },
-};
-
-const INTL_TAG: Record<Locale, string> = { en: "en-US", de: "de-DE" };
-
-export function getPricing(locale: Locale): Record<Tier, Money> | null {
-  return PRICING[locale] ?? null;
-}
-
-export function formatPrice(locale: Locale, money: Money): string {
-  return new Intl.NumberFormat(INTL_TAG[locale], {
-    style: "currency",
-    currency: money.currency,
-    /* Whole dollars. A trailing ".00" reads as a shopping cart. */
-    maximumFractionDigits: 0,
-  }).format(money.amount);
-}
 
 /* ── the selection ──────────────────────────────────────────────────────
  *
@@ -222,7 +184,6 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
     };
   }, []);
 
-  const pricing = getPricing(locale);
   const copy = SECTION_COPY[locale];
   const tiers = TIER_COPY[locale];
 
@@ -242,59 +203,48 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
           <p className={`lede ${styles.lede}`}>{copy.lede}</p>
         </header>
 
-        {pricing === null ? (
-          /*
-           * Unreachable while `en` is the only locale rendered. It exists so
-           * that shipping `/de` without confirming euro amounts fails visibly
-           * rather than charging one number and displaying another.
-           */
-          <p className={styles.notice} role="status">
-            {copy.unpriced}
-          </p>
-        ) : (
-          <fieldset className={styles.group}>
-            <legend className={styles.legend}>{copy.legend}</legend>
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>{copy.legend}</legend>
 
-            <div className={styles.tiers}>
-              {TIER_ORDER.map((id) => {
-                const tier_ = tiers[id];
-                const isSelected = tier === id;
-                return (
-                  <label
-                    key={id}
-                    className={styles.tier}
-                    data-selected={isSelected ? "true" : "false"}
-                  >
-                    <input
-                      className={styles.radio}
-                      type="radio"
-                      name="aea-tier"
-                      value={id}
-                      checked={isSelected}
-                      onChange={() => select(id)}
-                    />
-                    <span className={`display ${styles.name}`}>{tier_.name}</span>
-                    <span className={styles.line}>{tier_.delivery}</span>
-                    <span className={styles.line}>{tier_.work}</span>
-                    <span className={styles.line}>{tier_.guests}</span>
-                    {tier_.constraint === undefined ? null : (
-                      <span className={styles.constraint}>{tier_.constraint}</span>
-                    )}
-                    {/*
-                     * The visible state word. The radio already carries the
-                     * state for assistive technology, so this is hidden from it
-                     * to avoid saying "chosen" twice, and exists so that the
-                     * selection is not signalled by colour alone.
-                     */}
-                    <span className={styles.state} aria-hidden="true">
-                      {isSelected ? copy.chosen : copy.choose}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-        )}
+          <div className={styles.tiers}>
+            {TIER_ORDER.map((id) => {
+              const tier_ = tiers[id];
+              const isSelected = tier === id;
+              return (
+                <label
+                  key={id}
+                  className={styles.tier}
+                  data-selected={isSelected ? "true" : "false"}
+                >
+                  <input
+                    className={styles.radio}
+                    type="radio"
+                    name="aea-tier"
+                    value={id}
+                    checked={isSelected}
+                    onChange={() => select(id)}
+                  />
+                  <span className={`display ${styles.name}`}>{tier_.name}</span>
+                  <span className={styles.line}>{tier_.delivery}</span>
+                  <span className={styles.line}>{tier_.work}</span>
+                  <span className={styles.line}>{tier_.guests}</span>
+                  {tier_.constraint === undefined ? null : (
+                    <span className={styles.constraint}>{tier_.constraint}</span>
+                  )}
+                  {/*
+                   * The visible state word. The radio already carries the
+                   * state for assistive technology, so this is hidden from it
+                   * to avoid saying "chosen" twice, and exists so that the
+                   * selection is not signalled by colour alone.
+                   */}
+                  <span className={styles.state} aria-hidden="true">
+                    {isSelected ? copy.chosen : copy.choose}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
       </div>
     </section>
   );
