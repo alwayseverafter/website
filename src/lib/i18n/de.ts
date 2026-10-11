@@ -35,8 +35,8 @@ const terms: LegalDocument = {
     {
       heading: "Bezahlung",
       body: [
-        "Die Zahlung wickelt Stripe als Zahlungsdienstleister ab. Deine Kartendaten gehen an Stripe und niemals an uns.",
-        "Auf der deutschen Seite werden alle Preise in Euro und inklusive der gesetzlichen Umsatzsteuer angegeben. Den Betrag, der tatsächlich abgebucht wird, siehst du vollständig, bevor du bestätigst.",
+        "Auf dieser Seite wird nicht bezahlt. Du sagst uns, was du möchtest, wir melden uns mit einem Preis, und wir vereinbaren ihn mit dir, bevor Geld fließt.",
+        "Alle Preise werden in Euro und inklusive der gesetzlichen Umsatzsteuer genannt. Den Betrag siehst du vollständig, bevor du ihm zustimmst.",
       ],
     },
     {
@@ -139,7 +139,6 @@ const privacy: LegalDocument = {
       heading: "Cookies",
       body: [
         "Diese Seite setzt keine Cookies. Es gibt kein Cookie-Banner, weil es nichts gibt, wozu wir dich fragen müssten.",
-        "Der Bezahlvorgang läuft auf den Seiten von Stripe, und dort setzt Stripe eigene Cookies. Dafür gilt die Datenschutzerklärung von Stripe.",
       ],
     },
     {
@@ -157,11 +156,11 @@ const privacy: LegalDocument = {
       ],
     },
     {
-      heading: "Wenn du kaufst",
+      heading: "Wenn du uns schreibst",
       body: [
-        "Der Bezahlvorgang ist eine von Stripe gehostete Seite. Deine E-Mail-Adresse und deine Zahlungsdaten gibst du dort bei Stripe ein.",
-        "Stripe teilt uns mit, dass die Zahlung erfolgreich war, und übermittelt uns deine E-Mail-Adresse sowie den Betrag. Wir übergeben Stripe die Namen, das Datum und das Design, die du hier gewählt hast, damit deine Einladung gebaut und dir der Link per E-Mail geschickt werden kann.",
-        "Stripe verarbeitet Zahlungsdaten als eigenständiger Verantwortlicher nach seiner eigenen Datenschutzerklärung, auch in den Vereinigten Staaten. Die Übermittlung stützt sich auf die Standardvertragsklauseln der Europäischen Kommission.",
+        "Das Formular fragt nach deiner E-Mail-Adresse. Mitgesendet wird, was die Vorschau auf dieser Seite ohnehin schon enthält: die beiden Namen, das Datum und der von dir gewählte Stil. Sonst nichts, und keine Zahlungsdaten, denn hier wird nicht bezahlt.",
+        "Dieser Eintrag wird in unserer Datenbank bei Supabase gespeichert, und über Resend geht eine Benachrichtigung an uns, damit dir ein Mensch antwortet. Beide handeln ausschließlich nach unseren Weisungen.",
+        "Beide Anbieter verarbeiten Daten auch in den Vereinigten Staaten. Diese Übermittlung stützt sich auf die Standardvertragsklauseln der Europäischen Kommission.",
       ],
     },
     {

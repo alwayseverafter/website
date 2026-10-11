@@ -274,9 +274,6 @@ export function Choice({ locale = "en" }: { locale?: Locale }) {
                       onChange={() => select(id)}
                     />
                     <span className={`display ${styles.name}`}>{tier_.name}</span>
-                    <span className={styles.price}>
-                      {formatPrice(locale, pricing[id])}
-                    </span>
                     <span className={styles.line}>{tier_.delivery}</span>
                     <span className={styles.line}>{tier_.work}</span>
                     <span className={styles.line}>{tier_.guests}</span>
